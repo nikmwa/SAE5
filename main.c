@@ -379,8 +379,22 @@ static wiced_bt_gatt_status_t app_bt_connect_event_handler(wiced_bt_gatt_connect
 ********************************************************************************/
 void scanCallback(wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_data)
 {
-printf("Host = ");
-print_bd_address(p_scan_result->remote_bd_addr);
+	#define MAX_ADV_NAME_LEN	(28) 		/* Maximum possible name length since flags take 3 bytes and max packet is 31. */
+	#define SEARCH_DEVICE_NAME	"aly_per"	/* Name of device to search for */
+
+	uint8_t length;
+	uint8_t *p_name = NULL;
+	uint8_t dev_name[MAX_ADV_NAME_LEN];
+
+	p_name = wiced_bt_ble_check_advertising_data(p_adv_data, BTM_BLE_ADVERT_TYPE_NAME_COMPLETE, &length);
+	if ( p_name && (length == strlen(SEARCH_DEVICE_NAME)) && (memcmp(SEARCH_DEVICE_NAME, p_name, length)==0) )
+	{
+		memcpy(dev_name, p_name, length);
+		dev_name[length] = 0x00;	/* Null terminate the string */
+
+		printf("Found Device \"%s\" with BD Address", dev_name);
+		print_bd_address(p_scan_result->remote_bd_addr);
+	}
 }
 
 
