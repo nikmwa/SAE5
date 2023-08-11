@@ -391,6 +391,14 @@ void scanCallback(wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_dat
 
 		printf("Found Device \"%s\" with BD Address", dev_name);
 		print_bd_address(p_scan_result->remote_bd_addr);
+
+		/* Connect to peripheral and stop scanning*/
+		wiced_bt_gatt_le_connect(
+			p_scan_result->remote_bd_addr,
+			p_scan_result->ble_addr_type,
+			BLE_CONN_MODE_HIGH_DUTY,
+			WICED_TRUE);
+		wiced_bt_ble_scan( BTM_BLE_SCAN_TYPE_NONE, WICED_TRUE, scanCallback );
 	}
 }
 
@@ -422,13 +430,15 @@ static void uart_task(void *pvParameters)
             switch (readbyte)
 			{
 				case 's':			// Turn on scanning
-					printf( "Start scanning...\r\n" );
 					wiced_bt_ble_scan(BTM_BLE_SCAN_TYPE_HIGH_DUTY,TRUE,scanCallback);
 					break;
 
 				case 'S':			// Turn off scanning
-					printf( "Stop scanning.\r\n" );
 					wiced_bt_ble_scan(BTM_BLE_SCAN_TYPE_NONE,TRUE,scanCallback);
+					break;
+
+				case 'd': 			// Disconnect
+					wiced_bt_gatt_disconnect(connection_id);
 					break;
 
 				case '0':			// LEDs off
