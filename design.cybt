@@ -17,7 +17,7 @@
         <General>
             <Property id="DeviceAddress" value="00A051-000022"/>
             <Property id="MacGeneratedAddress" value="false"/>
-            <Property id="DeviceName" value="aly_mydev"/>
+            <Property id="DeviceName" value="aly_connect"/>
             <Property id="Appearance" value="256"/>
             <Property id="HostTxPowerLevel" value="Pos_0"/>
             <Property id="EnableRpaTimeout" value="true"/>

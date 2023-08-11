@@ -60,7 +60,7 @@
 #define CYBSP_USER_LED2 P10_0
 #endif
 
-#define UART_INPUT false
+#define UART_INPUT true
 
 #define TASK_STACK_SIZE (4096u)
 #define	TASK_PRIORITY 	(5u)
@@ -186,9 +186,6 @@ static wiced_result_t app_bt_management_callback( wiced_bt_management_evt_t even
 				uint8_t helpCommand = '?';
 				xQueueSend( xUARTQueue, &helpCommand, 0); /* Print out list of commands */
 				#endif
-
-				/* Start scanning */
-				wiced_bt_ble_scan(BTM_BLE_SCAN_TYPE_HIGH_DUTY,TRUE,scanCallback);
 
 	            result = WICED_BT_SUCCESS;
     }
@@ -425,9 +422,13 @@ static void uart_task(void *pvParameters)
             switch (readbyte)
 			{
 				case 's':			// Turn on scanning
+					printf( "Start scanning...\r\n" );
+					wiced_bt_ble_scan(BTM_BLE_SCAN_TYPE_HIGH_DUTY,TRUE,scanCallback);
 					break;
 
 				case 'S':			// Turn off scanning
+					printf( "Stop scanning.\r\n" );
+					wiced_bt_ble_scan(BTM_BLE_SCAN_TYPE_NONE,TRUE,scanCallback);
 					break;
 
 				case '0':			// LEDs off
