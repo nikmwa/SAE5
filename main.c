@@ -96,6 +96,7 @@ static void 					app_bt_free_buffer(uint8_t *p_data);
  ******************************************************************/
 uint16_t connection_id;
 uint16_t ledHandle = 0x0009;
+uint8_t ledStatus;
 
 /* Enable RTOS aware debugging in OpenOCD */
 volatile int uxTopUsedPriority;
@@ -294,6 +295,13 @@ static wiced_bt_gatt_status_t app_bt_gatt_event_callback( wiced_bt_gatt_evt_t ev
     	{
     		printf("GATT operation completed successfully\n");
 			status = WICED_BT_GATT_SUCCESS;
+			if ( (GATTC_OPTYPE_READ_HANDLE == p_event_data->operation_complete.op) )
+			{
+    			if(p_event_data->operation_complete.response_data.handle == ledHandle)
+    			{
+    				printf("LED value is: %d\n",ledStatus);
+    			}
+			}
     	}
     	else
     	{
@@ -459,6 +467,10 @@ static void uart_task(void *pvParameters)
 					wiced_bt_gatt_disconnect(connection_id);
 					break;
 
+				case 'r':
+					wiced_bt_gatt_client_send_read_handle(connection_id,ledHandle,0,&ledStatus,sizeof(ledStatus),GATT_AUTH_REQ_NONE);
+					break;
+
 				case '0':			// LEDs off
 					{
 					uint8_t writeData[1];
@@ -492,6 +504,7 @@ static void uart_task(void *pvParameters)
 					printf( "\t%c\tDisconnect\r\n", 'd' );
 					printf( "\t%c\tLED on\r\n", '7' );
 					printf( "\t%c\tLED off\r\n", '0' );
+					printf( "\t%c\tRead LED status\r\n", 'r' );
 					printf( "\r\n" );
 					break;
 			}
