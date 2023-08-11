@@ -95,6 +95,7 @@ static void 					app_bt_free_buffer(uint8_t *p_data);
  * Global/Static Variables
  ******************************************************************/
 uint16_t connection_id;
+uint16_t ledHandle = 0x0009;
 
 /* Enable RTOS aware debugging in OpenOCD */
 volatile int uxTopUsedPriority;
@@ -402,6 +403,23 @@ void scanCallback(wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_dat
 	}
 }
 
+/*******************************************************************************
+* Function Name: void writeAttribute
+********************************************************************************/
+void writeAttribute( uint16_t conn_id, uint16_t handle, uint16_t offset, wiced_bt_gatt_auth_req_t auth_req, uint16_t len, uint8_t* val )
+{
+	if  (conn_id && handle ) 
+	{
+		wiced_bt_gatt_write_hdr_t write_params;
+		write_params.handle = handle;
+		write_params.offset = offset;
+		write_params.auth_req = auth_req;
+		write_params.len = len;
+
+		wiced_bt_gatt_client_send_write(conn_id, GATT_REQ_WRITE, &write_params, val, NULL);
+	}
+}
+
 
 #if (UART_INPUT == true)
 /*******************************************************************************
@@ -442,6 +460,12 @@ static void uart_task(void *pvParameters)
 					break;
 
 				case '0':			// LEDs off
+					{
+					uint8_t writeData[1];
+					writeData[0] = readbyte-'0';
+					writeAttribute(connection_id, ledHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
+					}
+					break;
 				case '1':			// LEDs blue
 				case '2':			// LEDs red
 				case '3':			// LEDs blue+red
@@ -449,6 +473,11 @@ static void uart_task(void *pvParameters)
 				case '5':			// LEDs blue+green
 				case '6':			// LEDs red+green
 				case '7':			// LEDs white
+					{
+					uint8_t writeData[1];
+					writeData[0] = readbyte-'0';
+					writeAttribute(connection_id, ledHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
+					}
 					break;
 
 				default:
@@ -460,6 +489,9 @@ static void uart_task(void *pvParameters)
 					printf( "\t%c\tHelp (this message)\r\n", '?' );
 					printf( "\t%c\tStart scanning\r\n", 's' );
 					printf( "\t%c\tStop scanning\r\n", 'S' );
+					printf( "\t%c\tDisconnect\r\n", 'd' );
+					printf( "\t%c\tLED on\r\n", '7' );
+					printf( "\t%c\tLED off\r\n", '0' );
 					printf( "\r\n" );
 					break;
 			}
