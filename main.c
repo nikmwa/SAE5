@@ -96,6 +96,8 @@ static void 					app_bt_free_buffer(uint8_t *p_data);
  ******************************************************************/
 uint16_t connection_id;
 uint16_t ledHandle = 0x0009;
+uint16_t cccdHandle = 0x000D;
+uint16_t buttonCountHandle = 0x000C ;
 uint8_t ledStatus;
 
 /* Enable RTOS aware debugging in OpenOCD */
@@ -295,11 +297,17 @@ static wiced_bt_gatt_status_t app_bt_gatt_event_callback( wiced_bt_gatt_evt_t ev
     	{
     		printf("GATT operation completed successfully\n");
 			status = WICED_BT_GATT_SUCCESS;
-			if ( (GATTC_OPTYPE_READ_HANDLE == p_event_data->operation_complete.op) )
+			if ( GATTC_OPTYPE_READ_HANDLE == p_event_data->operation_complete.op )
 			{
     			if(p_event_data->operation_complete.response_data.handle == ledHandle)
     			{
     				printf("LED value is: %d\n",ledStatus);
+    			}
+			} else if ( GATTC_OPTYPE_NOTIFICATION == p_event_data->operation_complete.op )
+			{
+				if(p_event_data->operation_complete.response_data.handle == buttonCountHandle)
+    			{
+    				printf("Count notification received: %d\n", *p_event_data->operation_complete.response_data.att_value.p_data);
     			}
 			}
     	}
@@ -362,6 +370,15 @@ static wiced_bt_gatt_status_t app_bt_connect_event_handler(wiced_bt_gatt_connect
             connection_id = p_conn_status->conn_id;
 
 			cyhal_gpio_write(CYBSP_USER_LED2,CYBSP_LED_STATE_ON);
+
+			/* Initiate pairing */
+			wiced_bt_dev_sec_bond(
+							p_conn_status->bd_addr,
+							p_conn_status->addr_type,
+							BT_TRANSPORT_LE,
+							0,
+							NULL
+							);
         }
         else
         {
@@ -470,12 +487,26 @@ static void uart_task(void *pvParameters)
 				case 'r':
 					wiced_bt_gatt_client_send_read_handle(connection_id,ledHandle,0,&ledStatus,sizeof(ledStatus),GATT_AUTH_REQ_NONE);
 					break;
-
+				
+				case 'n': 			//Set CCCD
+					{
+						uint8_t writeData[2] = {0};
+						writeData[0]=GATT_CLIENT_CONFIG_NOTIFICATION;/* Values are sent little endian */
+						writeAttribute(connection_id, cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
+					}
+					break;
+				case 'N':			//Unset CCCD
+					{
+						uint8_t writeData[2] = {0};
+						writeData[0]=GATT_CLIENT_CONFIG_NONE;/* Values are sent little endian */
+						writeAttribute(connection_id, cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
+					}
+					break;
 				case '0':			// LEDs off
 					{
-					uint8_t writeData[1];
-					writeData[0] = readbyte-'0';
-					writeAttribute(connection_id, ledHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
+						uint8_t writeData[1];
+						writeData[0] = readbyte-'0';
+						writeAttribute(connection_id, ledHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
 					}
 					break;
 				case '1':			// LEDs blue
