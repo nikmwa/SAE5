@@ -68,6 +68,11 @@
 /* Typdef for function used to free allocated buffer to stack */
 typedef void (*pfn_free_buffer_t)(uint8_t *);
 
+#define __UUID_SERVICE_PSOC                          0x07, 0x11, 0x4A, 0xFA, 0xAA, 0x0C, 0xF1, 0x8A, 0xD7, 0x4D, 0xCC, 0x6C, 0x5C, 0x73, 0x76, 0xDB
+#define __UUID_CHARACTERISTIC_PSOC_LED               0x66, 0xBD, 0x3F, 0x8A, 0x3A, 0xDE, 0xC4, 0x98, 0xE0, 0x4D, 0x14, 0x01, 0x17, 0x87, 0x08, 0x09
+#define __UUID_CHARACTERISTIC_PSOC_BUTTON_COUNT      0x3D, 0xFF, 0x63, 0xF7, 0x02, 0xFB, 0x82, 0xB8, 0x69, 0x4B, 0x8D, 0x14, 0x16, 0xF3, 0x7F, 0x4F
+#define __UUID_DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION    0x2902
+
 /*******************************************************************
  * Function Prototypes
  ******************************************************************/
@@ -87,6 +92,11 @@ static void rx_cback(void *handler_arg, cyhal_uart_event_t event); /* Callback f
 static void uart_task(void *pvParameters);
 #endif
 
+/*Discovery functions*/
+static void startServiceDiscovery(void);
+static void startCharacteristicDiscovery(void);
+static void startDescriptorDiscovery(void);
+
 /* Helper functions to allocate/free buffers for GATT operations */
 static uint8_t 					*app_bt_alloc_buffer(uint16_t len);
 static void 					app_bt_free_buffer(uint8_t *p_data);
@@ -95,9 +105,6 @@ static void 					app_bt_free_buffer(uint8_t *p_data);
  * Global/Static Variables
  ******************************************************************/
 uint16_t connection_id;
-uint16_t ledHandle = 0x0009;
-uint16_t cccdHandle = 0x000D;
-uint16_t buttonCountHandle = 0x000C ;
 uint8_t ledStatus;
 
 /* Enable RTOS aware debugging in OpenOCD */
@@ -106,6 +113,26 @@ volatile int uxTopUsedPriority;
 /*UART task and Queue handles */
 TaskHandle_t  UartTaskHandle = NULL;
 QueueHandle_t xUARTQueue = 0;
+
+static const uint8_t serviceUUID[] = { __UUID_SERVICE_PSOC};
+static uint16_t serviceStartHandle = 0x0001;
+static uint16_t serviceEndHandle = 0xFFFF;
+
+typedef struct {
+uint16_t startHandle;
+uint16_t endHandle;
+uint16_t valHandle;
+uint16_t cccdHandle;
+} charHandle_t;
+
+static const uint8_t ledUUID[] = { __UUID_CHARACTERISTIC_PSOC_LED };
+static charHandle_t ledChar;
+static const uint8_t counterUUID[] = { __UUID_CHARACTERISTIC_PSOC_BUTTON_COUNT };
+static charHandle_t counterChar;
+
+#define MAX_CHARS_DISCOVERED (10)
+static charHandle_t charHandles[MAX_CHARS_DISCOVERED];
+static uint32_t charHandleCount;
 
 /*******************************************************************
  * Function Implementations
@@ -299,13 +326,13 @@ static wiced_bt_gatt_status_t app_bt_gatt_event_callback( wiced_bt_gatt_evt_t ev
 			status = WICED_BT_GATT_SUCCESS;
 			if ( GATTC_OPTYPE_READ_HANDLE == p_event_data->operation_complete.op )
 			{
-    			if(p_event_data->operation_complete.response_data.handle == ledHandle)
+    			if(p_event_data->operation_complete.response_data.handle == ledChar.valHandle)
     			{
     				printf("LED value is: %d\n",ledStatus);
     			}
 			} else if ( GATTC_OPTYPE_NOTIFICATION == p_event_data->operation_complete.op )
 			{
-				if(p_event_data->operation_complete.response_data.handle == buttonCountHandle)
+				if(p_event_data->operation_complete.response_data.handle == counterChar.valHandle)
     			{
     				printf("Count notification received: %d\n", *p_event_data->operation_complete.response_data.att_value.p_data);
     			}
@@ -335,7 +362,95 @@ static wiced_bt_gatt_status_t app_bt_gatt_event_callback( wiced_bt_gatt_evt_t ev
             status = WICED_BT_GATT_SUCCESS;
         }
         break;
+	case GATT_DISCOVERY_RESULT_EVT:
+		{
+		//////////////// Services Discovery /////////////////
+		if(GATT_DISCOVER_SERVICES_BY_UUID == p_event_data->discovery_result.discovery_type)
+		{
+			serviceStartHandle = p_event_data->discovery_result.discovery_data.group_value.s_handle;
+			serviceEndHandle = p_event_data->discovery_result.discovery_data.group_value.e_handle;
+			printf( "Discovered Service Start=0x%04X End=0x%04X\r\n", serviceStartHandle, serviceEndHandle );
+		} 
+		
+		//////////////// Characteristics Discovery /////////////////
+		if (GATT_DISCOVER_CHARACTERISTICS == p_event_data->discovery_result.discovery_type)
+		{
+			charHandles[charHandleCount].startHandle = p_event_data->discovery_result.discovery_data.characteristic_declaration.handle;
+			charHandles[charHandleCount].valHandle =   p_event_data->discovery_result.discovery_data.characteristic_declaration.val_handle;
+			charHandles[charHandleCount].endHandle = serviceEndHandle; /* Assume this is the last characteristic in the service so its end handle is at the end of the service group */
+			
+			printf( "Char Handle=0x%04X Value Handle=0x%04X ", charHandles[charHandleCount].startHandle, charHandles[charHandleCount].valHandle);
 
+			if( charHandleCount != 0 )
+			{
+				charHandles[charHandleCount-1].endHandle =	charHandles[charHandleCount].startHandle-1;
+			}
+			charHandleCount += 1;
+
+			if( charHandleCount > MAX_CHARS_DISCOVERED-1 )
+			{
+				printf( "This is really bad.. we discovered more characteristics than we can save\r\n" );
+			}
+
+			/* Look only for 16 byte UUIDs */
+			if( p_event_data->discovery_result.discovery_data.characteristic_declaration.char_uuid.len == LEN_UUID_128)
+			{
+				if( memcmp( ledUUID, p_event_data->discovery_result.discovery_data.characteristic_declaration.char_uuid.uu.uuid128, LEN_UUID_128 ) == 0 ) // If it is the LED characteristic
+				{
+					ledChar.startHandle = p_event_data->discovery_result.discovery_data.characteristic_declaration.handle;
+					ledChar.valHandle =   p_event_data->discovery_result.discovery_data.characteristic_declaration.val_handle;
+				}
+
+				if( memcmp( counterUUID, p_event_data->discovery_result.discovery_data.characteristic_declaration.char_uuid.uu.uuid128,LEN_UUID_128 ) == 0 ) // If it is the button count characteristic
+				{
+					counterChar.startHandle = p_event_data->discovery_result.discovery_data.characteristic_declaration.handle;
+					counterChar.valHandle =  p_event_data->discovery_result.discovery_data.characteristic_declaration.val_handle;
+				}
+
+				printf( "UUID: ");
+				for (int i=0; i < p_event_data->discovery_result.discovery_data.characteristic_declaration.char_uuid.len; i++ ) // Dump the UUID bytes to the screen
+				{
+					printf( "%02X ", p_event_data->discovery_result.discovery_data.characteristic_declaration.char_uuid.uu.uuid128[i] );
+				}
+			}
+			printf( "\r\n" );
+		}
+		//////////////// Characteristics Discovery /////////////////
+		if (GATT_DISCOVER_CHARACTERISTIC_DESCRIPTORS == p_event_data->discovery_result.discovery_type)
+		{
+			if ( p_event_data->discovery_result.discovery_data.char_descr_info.type.uu.uuid16 == __UUID_DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION )
+			{
+				counterChar.cccdHandle = p_event_data->discovery_result.discovery_data.char_descr_info.handle;
+				
+				/* Print out the handle and UUID of the CCCD */
+				printf( "Char Descriptor Handle = 0x%04X, UUID: ", p_event_data->discovery_result.discovery_data.char_descr_info.handle);
+
+				for( int i=0; i<p_event_data->discovery_result.discovery_data.char_descr_info.type.len; i++ )
+				{
+					/* We will use the uuid128 value from the union and just print out as many bytes as the len parameter
+					 * indicates. This allows us to print any type of UUID */
+					printf( "%02X ", p_event_data->discovery_result.discovery_data.char_descr_info.type.uu.uuid128[i] );
+				}
+				printf( "\r\n" );
+			}
+		}
+		}
+
+		break;
+	case GATT_DISCOVERY_CPLT_EVT:
+    	/* Once all characteristics are discovered... you need to setup the end handles */
+    	if( p_event_data->discovery_complete.discovery_type == GATT_DISCOVER_CHARACTERISTICS )
+    	{
+    	  for( int i=0; i<charHandleCount; i++ )
+    	  {
+    	    if( charHandles[i].startHandle == ledChar.startHandle )
+    	      ledChar.endHandle = charHandles[i].endHandle;
+    	    if( charHandles[i].startHandle == counterChar.startHandle )
+    	      counterChar.endHandle = charHandles[i].endHandle;
+    	  }
+    	}
+
+    	break;
     default:
     	printf( "Unhandled GATT Event: 0x%x (%d)\n", event, event );
         status = WICED_BT_GATT_SUCCESS;
@@ -485,28 +600,37 @@ static void uart_task(void *pvParameters)
 					break;
 
 				case 'r':
-					wiced_bt_gatt_client_send_read_handle(connection_id,ledHandle,0,&ledStatus,sizeof(ledStatus),GATT_AUTH_REQ_NONE);
+					wiced_bt_gatt_client_send_read_handle(connection_id,ledChar.valHandle,0,&ledStatus,sizeof(ledStatus),GATT_AUTH_REQ_NONE);
 					break;
 				
 				case 'n': 			//Set CCCD
 					{
 						uint8_t writeData[2] = {0};
 						writeData[0]=GATT_CLIENT_CONFIG_NOTIFICATION;/* Values are sent little endian */
-						writeAttribute(connection_id, cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
+						writeAttribute(connection_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
 					}
 					break;
 				case 'N':			//Unset CCCD
 					{
 						uint8_t writeData[2] = {0};
 						writeData[0]=GATT_CLIENT_CONFIG_NONE;/* Values are sent little endian */
-						writeAttribute(connection_id, cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
+						writeAttribute(connection_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
 					}
+					break;
+				case 'q': 			//Start service discovery
+					startServiceDiscovery();
+					break;
+				case 'w':			//Start characteristic discovery
+					startCharacteristicDiscovery();
+					break;
+				case 'e':
+					startDescriptorDiscovery();
 					break;
 				case '0':			// LEDs off
 					{
 						uint8_t writeData[1];
 						writeData[0] = readbyte-'0';
-						writeAttribute(connection_id, ledHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
+						writeAttribute(connection_id, ledChar.valHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
 					}
 					break;
 				case '1':			// LEDs blue
@@ -519,7 +643,7 @@ static void uart_task(void *pvParameters)
 					{
 					uint8_t writeData[1];
 					writeData[0] = readbyte-'0';
-					writeAttribute(connection_id, ledHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
+					writeAttribute(connection_id, ledChar.valHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
 					}
 					break;
 
@@ -536,6 +660,11 @@ static void uart_task(void *pvParameters)
 					printf( "\t%c\tLED on\r\n", '7' );
 					printf( "\t%c\tLED off\r\n", '0' );
 					printf( "\t%c\tRead LED status\r\n", 'r' );
+					printf( "\t%c\tStart notifying button count\r\n", 'n' );
+					printf( "\t%c\tStop notifying button count\r\n", 'N' );
+					printf( "\t%c\tStart service discovery\r\n", 'q' );
+					printf( "\t%c\tStart characteristic discovery\r\n", 'w' );
+					printf( "\t%c\tStart descriptor discovery\r\n", 'e' );
 					printf( "\r\n" );
 					break;
 			}
@@ -580,6 +709,41 @@ void rx_cback(void *handler_arg, cyhal_uart_event_t event)
 	portYIELD_FROM_ISR(xYieldRequired);
 }
 #endif
+
+static void startServiceDiscovery( void )
+{
+	wiced_bt_gatt_discovery_param_t discovery_param;
+	memset( &discovery_param, 0, sizeof( discovery_param ) );
+	discovery_param.s_handle = 0x0001;
+	discovery_param.e_handle = 0xFFFF;
+	discovery_param.uuid.len = LEN_UUID_128;
+	memcpy( &discovery_param.uuid.uu.uuid128, serviceUUID, LEN_UUID_128 );
+
+	wiced_bt_gatt_status_t status = wiced_bt_gatt_client_send_discover(connection_id,GATT_DISCOVER_SERVICES_BY_UUID, &discovery_param);
+	printf( "Started service discovery. Status: 0x%02X\r\n", status );
+}
+
+static void startCharacteristicDiscovery( void )
+{
+	charHandleCount = 0;
+
+	wiced_bt_gatt_discovery_param_t discovery_param;
+	discovery_param.s_handle = serviceStartHandle+1;
+	discovery_param.e_handle = serviceEndHandle;
+
+	wiced_bt_gatt_status_t status = wiced_bt_gatt_client_send_discover(connection_id,GATT_DISCOVER_CHARACTERISTICS, &discovery_param);
+	printf( "Started characteristic discovery. Status: 0x%02X\r\n", status );
+}
+
+static void startDescriptorDiscovery( void )
+{
+	wiced_bt_gatt_discovery_param_t discovery_param;
+	discovery_param.s_handle = counterChar.startHandle+1;
+	discovery_param.e_handle = counterChar.endHandle;
+
+	wiced_bt_gatt_status_t status = wiced_bt_gatt_client_send_discover(connection_id,GATT_DISCOVER_CHARACTERISTIC_DESCRIPTORS, &discovery_param);
+	printf( "Started descriptor discovery. Status: 0x%02X\r\n", status );
+}
 
 
 /*******************************************************************************
