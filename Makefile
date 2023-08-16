@@ -85,7 +85,7 @@ VERBOSE=
 # ... then code in directories named COMPONENT_foo and COMPONENT_bar will be
 # added to the build
 #
-COMPONENTS=FREERTOS WICED_BLE
+COMPONENTS=FREERTOS WICED_BLE LWIP MBEDTLS SECURE_SOCKETS
 
 # Like COMPONENTS, but disable optional code that was enabled by default.
 DISABLE_COMPONENTS=
@@ -100,8 +100,16 @@ SOURCES=
 # directories (without a leading -I).
 INCLUDES=./configs
 
+# Custom configuration of mbedtls library.
+MBEDTLSFLAGS = MBEDTLS_USER_CONFIG_FILE='"mbedtls_user_config.h"'
+
 # Add additional defines to the build process (without a leading -D).
-DEFINES=CY_RETARGET_IO_CONVERT_LF_TO_CRLF CY_RTOS_AWARE
+DEFINES=$(MBEDTLSFLAGS) CYBSP_WIFI_CAPABLE CY_RETARGET_IO_CONVERT_LF_TO_CRLF CY_RTOS_AWARE
+
+#Define the following macro in the application's Makefile to mandatorily disable the custom 
+#configuration header file.
+DEFINES += HTTP_DO_NOT_USE_CUSTOM_CONFIG
+DEFINES += MQTT_DO_NOT_USE_CUSTOM_CONFIG
 
 # Select softfp or hardfp floating point. Default is softfp.
 VFP_SELECT=
@@ -138,6 +146,9 @@ PREBUILD=
 
 # Custom post-build commands to run.
 POSTBUILD=
+
+# To change the default policy
+CY_SECURE_POLICY_NAME=policy_single_CM0_CM4_smif_swap
 
 
 ################################################################################

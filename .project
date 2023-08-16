@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>ex1_ch6_observer</name>
+	<name>ex1_ch6_observer_wifi</name>
 	<comment></comment>
 	<projects>
-		<project>mtb_shared</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -26,4 +25,6 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+	</linkedResources>
 </projectDescription>
