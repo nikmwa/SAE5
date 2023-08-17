@@ -14,6 +14,9 @@
 /* Library for malloc and free */
 #include "stdlib.h"
 
+#include "http_client.h"
+#include "cy_http_client_api.h"
+
 uint16_t conn_id;
 uint8_t ledStatus;
 
@@ -166,7 +169,8 @@ wiced_bt_gatt_status_t app_bt_gatt_event_callback( wiced_bt_gatt_evt_t event, wi
 				if(p_event_data->operation_complete.response_data.handle == counterChar.valHandle)
     			{
     				printf("Count notification received: %d\n", *p_event_data->operation_complete.response_data.att_value.p_data);
-    			}
+    			    send_http_counter_request(https_client,CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH,*p_event_data->operation_complete.response_data.att_value.p_data); 
+                }
 			}
     	}
     	else

@@ -95,7 +95,7 @@ QueueHandle_t xUARTQueue = 0;
 TaskHandle_t https_client_task_handle;
 QueueHandle_t httpQueue = 0;
 
-static cy_http_client_t https_client;
+// static cy_http_client_t https_client;
 
 /*******************************************************************
  * Function Implementations
@@ -259,7 +259,7 @@ static void uart_task(void *pvParameters)
 
 				case 'm': 			// Send HTTP POST to server
 					{
-						cy_rslt_t result = send_http_request(https_client,CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH);
+						cy_rslt_t result = send_http_example_request(https_client,CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH);
 						if( result != CY_RSLT_SUCCESS )
 						{
 							ERR_INFO(("Failed to send the http request.\n"));

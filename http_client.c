@@ -74,8 +74,8 @@ cy_http_client_method_t http_client_method;
 /* Holds the IP address obtained using Wi-Fi Connection Manager (WCM). */
 static cy_wcm_ip_address_t ip_addr;
 
-// /* Secure HTTP client instance. */
-// static cy_http_client_t https_client;
+/* Secure HTTP client instance. */
+cy_http_client_t https_client;
 
 /* Holds the security configuration such as client certificate,
  * client key, and rootCA.
@@ -192,7 +192,7 @@ void disconnect_callback_handler(cy_http_client_t handle, cy_http_client_disconn
 }
 
 /*******************************************************************************
- * Function Name: send_http_request
+ * Function Name: send_http_example_request
  *******************************************************************************
  * Summary:
  *  The function handles an http send operation.
@@ -205,7 +205,7 @@ void disconnect_callback_handler(cy_http_client_t handle, cy_http_client_disconn
  *  successfully, otherwise, it returns CY_RSLT_TYPE_ERROR.
  *
  *******************************************************************************/
-cy_rslt_t send_http_request( cy_http_client_t handle, cy_http_client_method_t method,
+cy_rslt_t send_http_example_request( cy_http_client_t handle, cy_http_client_method_t method,
                                const char * pPath)
 {
     cy_http_client_request_header_t request;
@@ -274,6 +274,94 @@ cy_rslt_t send_http_request( cy_http_client_t handle, cy_http_client_method_t me
 
     return http_status;
 }
+
+/*******************************************************************************
+ * Function Name: send_http_counter_request
+ *******************************************************************************
+ * Summary:
+ *  The function handles an http send operation for the counter.
+ *
+ * Parameters:
+ *  void
+ *
+ * Return:
+ *  cy_rslt_t: Returns CY_RSLT_SUCCESS if the secure HTTP client is configured
+ *  successfully, otherwise, it returns CY_RSLT_TYPE_ERROR.
+ *
+ *******************************************************************************/
+cy_rslt_t send_http_counter_request( cy_http_client_t handle, cy_http_client_method_t method,
+                               const char * pPath, int16_t count)
+{
+    cy_http_client_request_header_t request;
+    cy_http_client_header_t header;
+
+    cy_http_client_response_t response;
+
+    /* Return value of all methods from the HTTP Client library API. */
+    cy_rslt_t http_status = CY_RSLT_SUCCESS;
+
+    /* Initialize the response object. The same buffer used for storing
+     * request headers is reused here. */
+    request.buffer = http_get_buffer;
+    request.buffer_len = HTTP_GET_BUFFER_LENGTH;
+
+    request.headers_len = HTTP_REQUEST_HEADER_LEN;
+    request.method = method;
+    request.range_end = HTTP_REQUEST_RANGE_END;
+    request.range_start = HTTP_REQUEST_RANGE_START;
+    request.resource_path = pPath;
+
+    header.field = "Content-Type";
+    header.field_len = sizeof("Content-Type")-1;
+    header.value = "application/json";
+    header.value_len = sizeof("application/json")-1;
+
+    http_status = cy_http_client_write_header(handle, &request, &header, NUM_HTTP_HEADERS);
+    if( http_status != CY_RSLT_SUCCESS )
+    {
+        printf("\nWrite Header ----------- Fail \n");
+        return http_status;
+    }
+    else
+    {
+        printf( "\n Sending Request Headers:\n%.*s\n",( int ) request.headers_len, ( char * ) request.buffer);
+    }
+
+
+    uint8_t body[22];
+    snprintf(body, 22, "{\"counter\": %d}", count);
+    printf("body size: %d", sizeof(body)-1);
+    http_status = cy_http_client_send(handle, &request, body, 14, &response);
+    if( http_status != CY_RSLT_SUCCESS )
+    {
+        printf("\nFailed to send HTTP method=%d\n Error=%ld\r\n",request.method,(unsigned long)http_status);
+        return http_status;
+    }
+    else
+    {
+        if ( CY_HTTP_CLIENT_METHOD_HEAD != method )
+        {
+            TEST_INFO(( "Received HTTP response from %.*s%.*s...\n"
+                   "Response Headers:\n %.*s\n"
+                   "Response Status :\n %u \n"
+                   "Response Body   :\n %.*s\n",
+                   ( int ) sizeof(HTTPS_SERVER_HOST)-1, HTTPS_SERVER_HOST,
+                   ( int ) sizeof(request.resource_path) -1, request.resource_path,
+                   ( int ) response.headers_len, response.header,
+                   response.status_code,
+                   ( int ) response.body_len, response.body ) );
+
+        }
+        printf("\n buffer_len:[%d] headers_len:[%d] header_count:[%d] body_len:[%d] content_len:[%d]\n",
+                 response.buffer_len, response.headers_len, response.header_count, response.body_len, response.content_len);
+    }
+
+    return http_status;
+}
+
+
+
+
 /*******************************************************************************
  * Function Name: configure_https_client
  *******************************************************************************
@@ -474,11 +562,11 @@ void http_request(void)
     // if(get_after_put_flag)
     // {
     //     get_after_put_flag = false;
-    //     result = send_http_request(https_client,http_client_method,HTTP_GET_PATH_AFTER_PUT);
+    //     result = send_http_example_request(https_client,http_client_method,HTTP_GET_PATH_AFTER_PUT);
     // }
     // else
     // {
-    //     result = send_http_request(https_client,http_client_method,HTTP_PATH);
+    //     result = send_http_example_request(https_client,http_client_method,HTTP_PATH);
     // }
 
     // if( result != CY_RSLT_SUCCESS )

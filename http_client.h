@@ -129,12 +129,17 @@ typedef enum
     HTTPS_GET_METHOD_AFTER_PUT,
 } https_menu_t;
 
+extern cy_http_client_t https_client;
+
 /*******************************************************************************
 * Function Prototypes
 ********************************************************************************/
 void https_client_task(void *arg);
 cy_rslt_t wifi_connect(void);
-cy_rslt_t send_http_request(cy_http_client_t handle,cy_http_client_method_t method,const char * pPath);
+cy_rslt_t send_http_example_request(cy_http_client_t handle,cy_http_client_method_t method,const char * pPath);
+
+cy_rslt_t send_http_counter_request(cy_http_client_t handle,cy_http_client_method_t method,const char * pPath, int16_t counter);
+
 #endif /* SECURE_HTTP_CLIENT_H_ */
 
 
