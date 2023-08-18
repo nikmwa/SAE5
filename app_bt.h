@@ -15,6 +15,8 @@
 /* Typdef for function used to free allocated buffer to stack */
 typedef void (*pfn_free_buffer_t)(uint8_t *);
 
+/* UUIDs for service, characteristic and descriptor discovery */
+
 #define __UUID_SERVICE_PSOC                          0x07, 0x11, 0x4A, 0xFA, 0xAA, 0x0C, 0xF1, 0x8A, 0xD7, 0x4D, 0xCC, 0x6C, 0x5C, 0x73, 0x76, 0xDB
 #define __UUID_CHARACTERISTIC_PSOC_LED               0x66, 0xBD, 0x3F, 0x8A, 0x3A, 0xDE, 0xC4, 0x98, 0xE0, 0x4D, 0x14, 0x01, 0x17, 0x87, 0x08, 0x09
 #define __UUID_CHARACTERISTIC_PSOC_BUTTON_COUNT      0x3D, 0xFF, 0x63, 0xF7, 0x02, 0xFB, 0x82, 0xB8, 0x69, 0x4B, 0x8D, 0x14, 0x16, 0xF3, 0x7F, 0x4F
@@ -23,11 +25,8 @@ typedef void (*pfn_free_buffer_t)(uint8_t *);
 /******************************************************************************
  *                                Constants
  ******************************************************************************/
-extern uint16_t conn_id;
+extern uint16_t bt_conn_id;
 extern uint8_t ledStatus;
-
-// /* Enable RTOS aware debugging in OpenOCD */
-// volatile int uxTopUsedPriority;
 
 static const uint8_t serviceUUID[] = { __UUID_SERVICE_PSOC};
 static uint16_t serviceStartHandle = 0x0001;
@@ -64,9 +63,9 @@ wiced_bt_gatt_status_t app_bt_connect_event_handler          (wiced_bt_gatt_conn
 void scanCallback													(wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_data);
 
 /*Discovery functions*/
-void startServiceDiscovery(void);
-void startCharacteristicDiscovery(void);
-void startDescriptorDiscovery(void);
+void startBTServiceDiscovery(void);
+void startBTCharacteristicDiscovery(void);
+void startBTDescriptorDiscovery(void);
 
 /* Helper functions to allocate/free buffers for GATT operations */
 uint8_t 					*app_bt_alloc_buffer(uint16_t len);

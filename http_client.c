@@ -97,8 +97,7 @@ cy_http_client_response_t http_response;
 /******************************************************************************
 * Function Prototypes
 *******************************************************************************/
-void http_request(void);
-void fetch_http_client_method(void);
+static cy_rslt_t wifi_connect(void);
 void disconnect_callback_handler(cy_http_client_t handle, cy_http_client_disconn_type_t type, void *args);
 static cy_rslt_t configure_http_client(cy_http_client_t* http_client);
 
@@ -190,6 +189,110 @@ void disconnect_callback_handler(cy_http_client_t handle, cy_http_client_disconn
 {
     printf("\nApplication Disconnect callback triggered for handle = %p type=%d\n", handle, type);
 }
+
+/*******************************************************************************
+ * Function Name: configure_http_client
+ *******************************************************************************
+ * Summary:
+ *  Configures the security parameters such as client certificate, private key,
+ *  and the root CA certificate to start the HTTP client in secure mode.
+ *
+ * Parameters:
+ *  cy_http_client_t* http_client
+ *
+ * Return:
+ *  cy_rslt_t: Returns CY_RSLT_SUCCESS if the secure HTTP client is configured
+ *  successfully, otherwise, it returns CY_RSLT_TYPE_ERROR.
+ *
+ *******************************************************************************/
+static cy_rslt_t configure_http_client(cy_http_client_t* http_client)
+{
+    cy_rslt_t result = CY_RSLT_SUCCESS;
+    cy_http_disconnect_callback_t http_cb;
+
+
+
+    server_info.host_name = HTTPS_SERVER_HOST;
+    server_info.port = HTTPS_PORT;
+
+    /* Initialize the HTTP Client Library. */
+    result = cy_http_client_init();
+    if( result != CY_RSLT_SUCCESS )
+    {
+        /* Failure path. */
+        ERR_INFO(("Failed to initialize http client.\n"));
+    }
+
+
+
+    http_cb = disconnect_callback_handler;
+
+
+
+    /* Create an instance of the HTTP client. */
+    result = cy_http_client_create(NULL, &server_info, http_cb, NULL, http_client);
+
+
+    
+    if( result != CY_RSLT_SUCCESS )
+    {
+        /* Failure path */
+        ERR_INFO(("Failed to create http client.\n"));
+    }
+    return result;
+}
+
+/*******************************************************************************
+ * Function Name: http_client_task
+ *******************************************************************************
+ * Summary:
+ *  Starts the HTTP client in secure mode. This example application is using a
+ *  self-signed certificate which means there is no third-party certificate issuing
+ *  authority involved in the authentication of the client. It is the user's
+ *  responsibility to supply the necessary security configurations such as client's
+ *  certificate, private key of the client, and RootCA of the client to start the
+ *  HTTP client in secure mode.
+ *
+ * Parameters:
+ *  void * pvParameters 
+ *
+ * Return:
+ *  None.
+ *
+ *******************************************************************************/
+void http_client_task( void * pvParameters )
+{
+    cy_rslt_t result = CY_RSLT_TYPE_ERROR;
+
+    cy_http_client_t *HTTPclient;
+    HTTPclient = (cy_http_client_t *) pvParameters;
+
+    /* Connects to the Wi-Fi Access Point. */
+    result = wifi_connect();
+    PRINT_AND_ASSERT(result, "Wi-Fi connection failed.\n");
+
+    /* Configure the HTTPS client and
+     * register a default dynamic URL handler.
+     */
+    result = configure_http_client(HTTPclient);
+    PRINT_AND_ASSERT(result, "Failed to configure the HTTPS client.\n");
+
+    /* Connect the HTTP client to server. */
+    result = cy_http_client_connect(*HTTPclient, TRANSPORT_SEND_RECV_TIMEOUT_MS, TRANSPORT_SEND_RECV_TIMEOUT_MS);
+    if( result != CY_RSLT_SUCCESS )
+    {
+        ERR_INFO(("Failed to connect to the http server.\n"));
+    }
+    else
+    {
+        printf("Successfully connected to http server\r\n");
+        while(true)
+        {
+            // nothing
+        }
+    }
+}
+
 
 /*******************************************************************************
  * Function Name: send_http_example_request
@@ -359,225 +462,5 @@ cy_rslt_t send_http_counter_request( cy_http_client_t handle, cy_http_client_met
     return http_status;
 }
 
-
-
-
-/*******************************************************************************
- * Function Name: configure_http_client
- *******************************************************************************
- * Summary:
- *  Configures the security parameters such as client certificate, private key,
- *  and the root CA certificate to start the HTTP client in secure mode.
- *
- * Parameters:
- *  cy_http_client_t* http_client
- *
- * Return:
- *  cy_rslt_t: Returns CY_RSLT_SUCCESS if the secure HTTP client is configured
- *  successfully, otherwise, it returns CY_RSLT_TYPE_ERROR.
- *
- *******************************************************************************/
-static cy_rslt_t configure_http_client(cy_http_client_t* http_client)
-{
-    cy_rslt_t result = CY_RSLT_SUCCESS;
-    cy_http_disconnect_callback_t http_cb;
-
-
-
-    server_info.host_name = HTTPS_SERVER_HOST;
-    server_info.port = HTTPS_PORT;
-
-    /* Initialize the HTTP Client Library. */
-    result = cy_http_client_init();
-    if( result != CY_RSLT_SUCCESS )
-    {
-        /* Failure path. */
-        ERR_INFO(("Failed to initialize http client.\n"));
-    }
-
-
-
-    http_cb = disconnect_callback_handler;
-
-
-
-    /* Create an instance of the HTTP client. */
-    result = cy_http_client_create(NULL, &server_info, http_cb, NULL, http_client);
-
-
-    
-    if( result != CY_RSLT_SUCCESS )
-    {
-        /* Failure path */
-        ERR_INFO(("Failed to create http client.\n"));
-    }
-    return result;
-}
-
-/*******************************************************************************
- * Function Name: http_client_task
- *******************************************************************************
- * Summary:
- *  Starts the HTTP client in secure mode. This example application is using a
- *  self-signed certificate which means there is no third-party certificate issuing
- *  authority involved in the authentication of the client. It is the user's
- *  responsibility to supply the necessary security configurations such as client's
- *  certificate, private key of the client, and RootCA of the client to start the
- *  HTTP client in secure mode.
- *
- * Parameters:
- *  void * pvParameters 
- *
- * Return:
- *  None.
- *
- *******************************************************************************/
-void http_client_task( void * pvParameters )
-{
-    cy_rslt_t result = CY_RSLT_TYPE_ERROR;
-
-    cy_http_client_t *HTTPclient;
-    HTTPclient = (cy_http_client_t *) pvParameters;
-
-    // (void)arg;
-
-
-    /* Connects to the Wi-Fi Access Point. */
-    result = wifi_connect();
-    PRINT_AND_ASSERT(result, "Wi-Fi connection failed.\n");
-
-
-
-    /* Configure the HTTPS client and
-     * register a default dynamic URL handler.
-     */
-    result = configure_http_client(HTTPclient);
-    PRINT_AND_ASSERT(result, "Failed to configure the HTTPS client.\n");
-
-
-
-    /* Connect the HTTP client to server. */
-    result = cy_http_client_connect(*HTTPclient, TRANSPORT_SEND_RECV_TIMEOUT_MS, TRANSPORT_SEND_RECV_TIMEOUT_MS);
-    if( result != CY_RSLT_SUCCESS )
-    {
-        ERR_INFO(("Failed to connect to the http server.\n"));
-    }
-    else
-    {
-        printf("Successfully connected to http server\r\n");
-        while(true)
-        {
-            /*fetch HTTP client Methods. */
-            fetch_http_client_method();
-        }
-    }
-}
-
-/*******************************************************************************
- * Function Name: fetch_http_client_method
- *******************************************************************************
- * Summary:
- *  The function handles an http methods.
- *
- * Parameters:
- *  void
- *
- * Return:
- *  None.
- *
- *******************************************************************************/
-void fetch_http_client_method(void)
-{
-
-    // /* Status variable */
-    // uint8_t uart_read_value;
-    // uint8_t uart_read_integer;
-
-    // /* Options to select the method*/
-    // printf("\n===============================================================\n");
-    // printf(MENU_HTTPS_METHOD);
-    // printf("\n===============================================================\n");
-
-    // /* Reading option number from console */
-    // while (cyhal_uart_getc(&cy_retarget_io_uart_obj, &uart_read_value, 1) != CY_RSLT_SUCCESS);
-    // /* Converting ASCII character to Integer value */
-    // uart_read_integer = uart_read_value - ASCII_INTEGER_DIFFERENCE;
-
-    // switch(uart_read_integer)
-    // {
-    //      case HTTPS_GET_METHOD:
-    //      {
-    //          printf("\n HTTP GET Request..\n");
-    //          http_client_method = CY_HTTP_CLIENT_METHOD_GET;
-    //          break;
-    //      }
-    //      case HTTPS_POST_METHOD:
-    //      {
-    //          printf("\n HTTP POST Request..\n");
-    //          http_client_method = CY_HTTP_CLIENT_METHOD_POST;
-    //          break;
-    //      }
-    //      case HTTPS_PUT_METHOD:
-    //      {
-    //          printf("\n HTTP PUT Request..\n");
-    //          http_client_method = CY_HTTP_CLIENT_METHOD_PUT;
-    //          break;
-    //      }
-    //      case HTTPS_GET_METHOD_AFTER_PUT:
-    //      {
-    //          printf("\n HTTP GET FOR PUT Request..\n");
-    //          http_client_method = CY_HTTP_CLIENT_METHOD_GET;
-    //          get_after_put_flag = true;
-    //          break;
-    //      }
-    //     default:
-    //     {
-    //         printf("\x1b[2J\x1b[;H");
-    //         printf("\r\nPlease select from the given valid options\r\n");
-    //     }
-    // }
-
-    /* Send the HTTP request and body to the server, and receive the status from it. */
-    http_request();
-}
-
-/*******************************************************************************
- * Function Name: http_request
- *******************************************************************************
- * Summary:
- *  The function handles an http request operation.
- *
- * Parameters:
- *  void
- *
- * Return:
- *  None.
- *
- *******************************************************************************/
-void http_request(void)
-{
-    // cy_rslt_t result = CY_RSLT_SUCCESS;
-
-    // /* Send the HTTP request and body to the server, and receive the response from it. */
-    // if(get_after_put_flag)
-    // {
-    //     get_after_put_flag = false;
-    //     result = send_http_example_request(http_client,http_client_method,HTTP_GET_PATH_AFTER_PUT);
-    // }
-    // else
-    // {
-    //     result = send_http_example_request(http_client,http_client_method,HTTP_PATH);
-    // }
-
-    // if( result != CY_RSLT_SUCCESS )
-    // {
-    //     ERR_INFO(("Failed to send the http request.\n"));
-    // }
-    // else
-    // {
-    //     printf("\r\n Successfully sent GET request to http server\r\n");
-    //     printf("\r\n The http status code is :: %d\r\n",http_response.status_code);
-    // }
-}
 /* [] END OF FILE */
 

@@ -42,8 +42,8 @@
 /*******************************************************************************
 * Include guard
 *******************************************************************************/
-#ifndef SECURE_HTTP_CLIENT_H_
-#define SECURE_HTTP_CLIENT_H_
+#ifndef HTTP_CLIENT_H_
+#define HTTP_CLIENT_H_
 
 /* FreeRTOS header file */
 #include "FreeRTOS.h"
@@ -86,10 +86,7 @@
 #define TRANSPORT_SEND_RECV_TIMEOUT_MS           (5000)
 #define HTTP_GET_BUFFER_LENGTH                   (2048)
 #define ASCII_INTEGER_DIFFERENCE                 (48)
-//#define REQUEST_BODY                           "{\"temperature\": 25}"
 #define HTTP_PATH                                "/api/v1/dxtPb9STbQBdLSDzU3Ad/telemetry"
-#define HTTP_GET_PATH_AFTER_PUT                  "/myhellomessage"
-//#define REQUEST_BODY_LENGTH                      ( sizeof( REQUEST_BODY ) - 1U )
 
 /* Wi-Fi re-connection time interval in milliseconds */
 #define WIFI_CONN_RETRY_INTERVAL_MSEC            (1000u)
@@ -107,40 +104,19 @@
 /*Length of the request header.*/
 #define HTTP_REQUEST_HEADER_LEN                  (0)
 
-/* HTTPS Menu for options to select the method from keyboard  */
-#define MENU_HTTPS_METHOD                                                           \
-        "\n"                                                                        \
-        "Please select the index of HTTP method to be tested from below:\n"         \
-        "\n"                                                                        \
-        "1. HTTPS_GET_METHOD\n"                                                     \
-        "2. HTTPS_POST_METHOD\n"                                                    \
-        "3. HTTPS_PUT_METHOD\n"                                                     \
-        "4. HTTPS_GET_METHOD_AFTER_PUT\n"                                           \
-
 /******************************************************
- *                   Enumerations
+ *                   Variable
  ******************************************************/
-/*  HTTP Client supported methods  */
-typedef enum
-{
-    HTTPS_GET_METHOD=1,
-    HTTPS_POST_METHOD,
-    HTTPS_PUT_METHOD,
-    HTTPS_GET_METHOD_AFTER_PUT,
-} http_menu_t;
-
 extern cy_http_client_t http_client;
 
 /*******************************************************************************
 * Function Prototypes
 ********************************************************************************/
 void http_client_task(void *arg);
-cy_rslt_t wifi_connect(void);
 cy_rslt_t send_http_example_request(cy_http_client_t handle,cy_http_client_method_t method,const char * pPath);
-
 cy_rslt_t send_http_counter_request(cy_http_client_t handle,cy_http_client_method_t method,const char * pPath, int16_t counter);
 
-#endif /* SECURE_HTTP_CLIENT_H_ */
+#endif /* HTTP_CLIENT_H_ */
 
 
 /* [] END OF FILE */

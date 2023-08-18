@@ -17,7 +17,7 @@
 #include "http_client.h"
 #include "cy_http_client_api.h"
 
-uint16_t conn_id;
+uint16_t bt_conn_id;
 uint8_t ledStatus;
 
 charHandle_t ledChar;
@@ -336,7 +336,7 @@ wiced_bt_gatt_status_t app_bt_connect_event_handler(wiced_bt_gatt_connection_sta
             printf("Disconnected : BDA " );
             print_bd_address(p_conn_status->bd_addr);
             printf("Connection ID '%d', Reason '%s'\n", p_conn_status->conn_id, get_bt_gatt_disconn_reason_name(p_conn_status->reason) );
-			conn_id = 0;
+			bt_conn_id = 0;
 
 			cyhal_gpio_write(CYBSP_USER_LED2,CYBSP_LED_STATE_OFF);
         }
@@ -381,9 +381,9 @@ void scanCallback(wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_dat
 /*******************************************************************************
 * Function Name: void writeAttribute
 ********************************************************************************/
-void writeAttribute( uint16_t conn_id, uint16_t handle, uint16_t offset, wiced_bt_gatt_auth_req_t auth_req, uint16_t len, uint8_t* val )
+void writeAttribute( uint16_t bt_conn_id, uint16_t handle, uint16_t offset, wiced_bt_gatt_auth_req_t auth_req, uint16_t len, uint8_t* val )
 {
-	if  (conn_id && handle ) 
+	if  (bt_conn_id && handle ) 
 	{
 		wiced_bt_gatt_write_hdr_t write_params;
 		write_params.handle = handle;
@@ -391,11 +391,11 @@ void writeAttribute( uint16_t conn_id, uint16_t handle, uint16_t offset, wiced_b
 		write_params.auth_req = auth_req;
 		write_params.len = len;
 
-		wiced_bt_gatt_client_send_write(conn_id, GATT_REQ_WRITE, &write_params, val, NULL);
+		wiced_bt_gatt_client_send_write(bt_conn_id, GATT_REQ_WRITE, &write_params, val, NULL);
 	}
 }
 
-void startServiceDiscovery( void )
+void startBTServiceDiscovery( void )
 {
 	wiced_bt_gatt_discovery_param_t discovery_param;
 	memset( &discovery_param, 0, sizeof( discovery_param ) );
@@ -404,11 +404,11 @@ void startServiceDiscovery( void )
 	discovery_param.uuid.len = LEN_UUID_128;
 	memcpy( &discovery_param.uuid.uu.uuid128, serviceUUID, LEN_UUID_128 );
 
-	wiced_bt_gatt_status_t status = wiced_bt_gatt_client_send_discover(conn_id,GATT_DISCOVER_SERVICES_BY_UUID, &discovery_param);
+	wiced_bt_gatt_status_t status = wiced_bt_gatt_client_send_discover(bt_conn_id,GATT_DISCOVER_SERVICES_BY_UUID, &discovery_param);
 	printf( "Started service discovery. Status: 0x%02X\r\n", status );
 }
 
-void startCharacteristicDiscovery( void )
+void startBTCharacteristicDiscovery( void )
 {
 	charHandleCount = 0;
 
@@ -416,17 +416,17 @@ void startCharacteristicDiscovery( void )
 	discovery_param.s_handle = serviceStartHandle+1;
 	discovery_param.e_handle = serviceEndHandle;
 
-	wiced_bt_gatt_status_t status = wiced_bt_gatt_client_send_discover(conn_id,GATT_DISCOVER_CHARACTERISTICS, &discovery_param);
+	wiced_bt_gatt_status_t status = wiced_bt_gatt_client_send_discover(bt_conn_id,GATT_DISCOVER_CHARACTERISTICS, &discovery_param);
 	printf( "Started characteristic discovery. Status: 0x%02X\r\n", status );
 }
 
-void startDescriptorDiscovery( void )
+void startBTDescriptorDiscovery( void )
 {
 	wiced_bt_gatt_discovery_param_t discovery_param;
 	discovery_param.s_handle = counterChar.startHandle+1;
 	discovery_param.e_handle = counterChar.endHandle;
 
-	wiced_bt_gatt_status_t status = wiced_bt_gatt_client_send_discover(conn_id,GATT_DISCOVER_CHARACTERISTIC_DESCRIPTORS, &discovery_param);
+	wiced_bt_gatt_status_t status = wiced_bt_gatt_client_send_discover(bt_conn_id,GATT_DISCOVER_CHARACTERISTIC_DESCRIPTORS, &discovery_param);
 	printf( "Started descriptor discovery. Status: 0x%02X\r\n", status );
 }
 

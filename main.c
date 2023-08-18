@@ -206,58 +206,52 @@ static void uart_task(void *pvParameters)
 					break;
 
 				case 'd': 			// Disconnect
-					wiced_bt_gatt_disconnect(conn_id);
+					wiced_bt_gatt_disconnect(bt_conn_id);
 					break;
 
-				case 'r':
-					wiced_bt_gatt_client_send_read_handle(conn_id,ledChar.valHandle,0,&ledStatus,sizeof(ledStatus),GATT_AUTH_REQ_NONE);
+				case 'r': 			// Read LED status
+					wiced_bt_gatt_client_send_read_handle(bt_conn_id,ledChar.valHandle,0,&ledStatus,sizeof(ledStatus),GATT_AUTH_REQ_NONE);
 					break;
 				
 				case 'n': 			//Set CCCD
 					{
 						uint8_t writeData[2] = {0};
 						writeData[0]=GATT_CLIENT_CONFIG_NOTIFICATION;/* Values are sent little endian */
-						writeAttribute(conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
+						writeAttribute(bt_conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
 					}
 					break;
 				case 'N':			//Unset CCCD
 					{
 						uint8_t writeData[2] = {0};
 						writeData[0]=GATT_CLIENT_CONFIG_NONE;/* Values are sent little endian */
-						writeAttribute(conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
+						writeAttribute(bt_conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
 					}
 					break;
 				case 'q': 			//Start service discovery
-					startServiceDiscovery();
+					startBTServiceDiscovery();
 					break;
 				case 'w':			//Start characteristic discovery
-					startCharacteristicDiscovery();
+					startBTCharacteristicDiscovery();
 					break;
-				case 'e':
-					startDescriptorDiscovery();
+				case 'e':			////Start descriptor discovery
+					startBTDescriptorDiscovery();
 					break;
-				case '0':			// LEDs off
+				case '0':			// LED off
 					{
 						uint8_t writeData[1];
 						writeData[0] = readbyte-'0';
-						writeAttribute(conn_id, ledChar.valHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
+						writeAttribute(bt_conn_id, ledChar.valHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
 					}
 					break;
-				case '1':			// LEDs blue
-				case '2':			// LEDs red
-				case '3':			// LEDs blue+red
-				case '4':			// LEDs green
-				case '5':			// LEDs blue+green
-				case '6':			// LEDs red+green
-				case '7':			// LEDs white
+				case '7':			// LED on
 					{
 					uint8_t writeData[1];
 					writeData[0] = readbyte-'0';
-					writeAttribute(conn_id, ledChar.valHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
+					writeAttribute(bt_conn_id, ledChar.valHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
 					}
 					break;
 
-				case 'm': 			// Send HTTP POST to server
+				case 'm': 			// Send HTTP example temperature to thingsboard server
 					{
 						cy_rslt_t result = send_http_example_request(http_client,CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH);
 						if( result != CY_RSLT_SUCCESS )
