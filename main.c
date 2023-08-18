@@ -62,16 +62,11 @@
 /*******************************************************************
  * Macros to assist development of the exercises
  ******************************************************************/
-#ifndef CYBSP_USER_LED2
-#define CYBSP_USER_LED2 P10_0
-#endif
-
 #define TASK_STACK_SIZE (4096u)
 #define	TASK_PRIORITY 	(5u)
 
 #define HTTPS_CLIENT_TASK_STACK_SIZE        (5 * 1024)
 #define HTTPS_CLIENT_TASK_PRIORITY          (1)
-
 
 /*******************************************************************
  * Function Prototypes
@@ -88,7 +83,7 @@ static void uart_task(void *pvParameters);
 static TaskHandle_t  UartTaskHandle = NULL;
 static QueueHandle_t xUARTQueue = 0;
 
-/* HTTPS client task handle */
+/* HTTP client task handle */
 static TaskHandle_t HTTPClientTaskHandle;
 
 /*******************************************************************
@@ -117,7 +112,7 @@ int main(void)
                         CY_RETARGET_IO_BAUDRATE);
 
 	/* Initialize pin to indicate scanning */
-    cyhal_gpio_init(CYBSP_USER_LED2,CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, CYBSP_LED_STATE_OFF);
+    cyhal_gpio_init(CYBSP_USER_LED,CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, CYBSP_LED_STATE_OFF);
 
     /* Configure platform specific settings for the BT device */
     cybt_platform_config_init(&cybsp_bt_platform_cfg);

@@ -122,17 +122,17 @@ wiced_result_t app_bt_management_callback( wiced_bt_management_evt_t event, wice
     {
 				case BTM_BLE_SCAN_TYPE_NONE:
 					printf( "Scanning stopped.\r\n" );
-					cyhal_gpio_write(CYBSP_USER_LED2,CYBSP_LED_STATE_OFF);
+					cyhal_gpio_write(CYBSP_USER_LED,CYBSP_LED_STATE_OFF);
 					break;
 
 				case BTM_BLE_SCAN_TYPE_HIGH_DUTY:
 					printf( "High duty scanning.\r\n" );
-					cyhal_gpio_write(CYBSP_USER_LED2,CYBSP_LED_STATE_ON);
+					cyhal_gpio_write(CYBSP_USER_LED,CYBSP_LED_STATE_ON);
 					break;
 
 				case BTM_BLE_SCAN_TYPE_LOW_DUTY:
 					printf( "Low duty scanning.\r\n" );
-					cyhal_gpio_write(CYBSP_USER_LED2,CYBSP_LED_STATE_ON);
+					cyhal_gpio_write(CYBSP_USER_LED,CYBSP_LED_STATE_ON);
 					break;
     }
 			result = WICED_BT_SUCCESS;
@@ -338,7 +338,7 @@ wiced_bt_gatt_status_t app_bt_connect_event_handler(wiced_bt_gatt_connection_sta
 			printf("Connection ID %d\n", p_conn_status->conn_id );
             bt_conn_id = p_conn_status->conn_id;
 
-			cyhal_gpio_write(CYBSP_USER_LED2,CYBSP_LED_STATE_ON);
+			cyhal_gpio_write(CYBSP_USER_LED,CYBSP_LED_STATE_ON);
 
 			/* Initiate pairing */
 			wiced_bt_dev_sec_bond(
@@ -357,7 +357,7 @@ wiced_bt_gatt_status_t app_bt_connect_event_handler(wiced_bt_gatt_connection_sta
             printf("Connection ID '%d', Reason '%s'\n", p_conn_status->conn_id, get_bt_gatt_disconn_reason_name(p_conn_status->reason) );
 			bt_conn_id = 0;
 
-			cyhal_gpio_write(CYBSP_USER_LED2,CYBSP_LED_STATE_OFF);
+			cyhal_gpio_write(CYBSP_USER_LED,CYBSP_LED_STATE_OFF);
         }
 
         status = WICED_BT_GATT_SUCCESS;

@@ -8,8 +8,8 @@
 #include "wiced_bt_gatt.h"
 #include <stdio.h>
 
-#ifndef CYBSP_USER_LED2
-#define CYBSP_USER_LED2 P10_0
+#ifndef CYBSP_USER_LED
+#define CYBSP_USER_LED P10_0
 #endif
 
 /* Typdef for function used to free allocated buffer to stack */

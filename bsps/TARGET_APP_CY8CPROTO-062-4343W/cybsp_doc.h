@@ -67,8 +67,8 @@ extern "C" {
 /** User LED1 \def CYBSP_USER_LED1
  */
 #endif
-#ifdef CYBSP_USER_LED2
-/** User LED2 \def CYBSP_USER_LED2
+#ifdef CYBSP_USER_LED
+/** User LED2 \def CYBSP_USER_LED
  */
 #endif
 #ifdef CYBSP_USER_LED3
