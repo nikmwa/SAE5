@@ -75,7 +75,7 @@ cy_http_client_method_t http_client_method;
 static cy_wcm_ip_address_t ip_addr;
 
 /* Secure HTTP client instance. */
-cy_http_client_t https_client;
+cy_http_client_t http_client;
 
 /* Holds the security configuration such as client certificate,
  * client key, and rootCA.
@@ -98,9 +98,9 @@ cy_http_client_response_t http_response;
 * Function Prototypes
 *******************************************************************************/
 void http_request(void);
-void fetch_https_client_method(void);
+void fetch_http_client_method(void);
 void disconnect_callback_handler(cy_http_client_t handle, cy_http_client_disconn_type_t type, void *args);
-static cy_rslt_t configure_https_client(cy_http_client_t* https_client);
+static cy_rslt_t configure_http_client(cy_http_client_t* http_client);
 
 /********************************************************************************
  * Function Name: wifi_connect
@@ -327,11 +327,11 @@ cy_rslt_t send_http_counter_request( cy_http_client_t handle, cy_http_client_met
         printf( "\n Sending Request Headers:\n%.*s\n",( int ) request.headers_len, ( char * ) request.buffer);
     }
 
-
     uint8_t body[22];
     snprintf(body, 22, "{\"counter\": %d}", count);
-    printf("body size: %d", sizeof(body)-1);
-    http_status = cy_http_client_send(handle, &request, body, 14, &response);
+    uint8_t length = strlen(body);
+
+    http_status = cy_http_client_send(handle, &request, body, length, &response);
     if( http_status != CY_RSLT_SUCCESS )
     {
         printf("\nFailed to send HTTP method=%d\n Error=%ld\r\n",request.method,(unsigned long)http_status);
@@ -363,21 +363,21 @@ cy_rslt_t send_http_counter_request( cy_http_client_t handle, cy_http_client_met
 
 
 /*******************************************************************************
- * Function Name: configure_https_client
+ * Function Name: configure_http_client
  *******************************************************************************
  * Summary:
  *  Configures the security parameters such as client certificate, private key,
  *  and the root CA certificate to start the HTTP client in secure mode.
  *
  * Parameters:
- *  cy_http_client_t* https_client
+ *  cy_http_client_t* http_client
  *
  * Return:
  *  cy_rslt_t: Returns CY_RSLT_SUCCESS if the secure HTTP client is configured
  *  successfully, otherwise, it returns CY_RSLT_TYPE_ERROR.
  *
  *******************************************************************************/
-static cy_rslt_t configure_https_client(cy_http_client_t* https_client)
+static cy_rslt_t configure_http_client(cy_http_client_t* http_client)
 {
     cy_rslt_t result = CY_RSLT_SUCCESS;
     cy_http_disconnect_callback_t http_cb;
@@ -402,7 +402,7 @@ static cy_rslt_t configure_https_client(cy_http_client_t* https_client)
 
 
     /* Create an instance of the HTTP client. */
-    result = cy_http_client_create(NULL, &server_info, http_cb, NULL, https_client);
+    result = cy_http_client_create(NULL, &server_info, http_cb, NULL, http_client);
 
 
     
@@ -415,7 +415,7 @@ static cy_rslt_t configure_https_client(cy_http_client_t* https_client)
 }
 
 /*******************************************************************************
- * Function Name: https_client_task
+ * Function Name: http_client_task
  *******************************************************************************
  * Summary:
  *  Starts the HTTP client in secure mode. This example application is using a
@@ -432,7 +432,7 @@ static cy_rslt_t configure_https_client(cy_http_client_t* https_client)
  *  None.
  *
  *******************************************************************************/
-void https_client_task( void * pvParameters )
+void http_client_task( void * pvParameters )
 {
     cy_rslt_t result = CY_RSLT_TYPE_ERROR;
 
@@ -451,7 +451,7 @@ void https_client_task( void * pvParameters )
     /* Configure the HTTPS client and
      * register a default dynamic URL handler.
      */
-    result = configure_https_client(HTTPclient);
+    result = configure_http_client(HTTPclient);
     PRINT_AND_ASSERT(result, "Failed to configure the HTTPS client.\n");
 
 
@@ -468,13 +468,13 @@ void https_client_task( void * pvParameters )
         while(true)
         {
             /*fetch HTTP client Methods. */
-            fetch_https_client_method();
+            fetch_http_client_method();
         }
     }
 }
 
 /*******************************************************************************
- * Function Name: fetch_https_client_method
+ * Function Name: fetch_http_client_method
  *******************************************************************************
  * Summary:
  *  The function handles an http methods.
@@ -486,7 +486,7 @@ void https_client_task( void * pvParameters )
  *  None.
  *
  *******************************************************************************/
-void fetch_https_client_method(void)
+void fetch_http_client_method(void)
 {
 
     // /* Status variable */
@@ -562,11 +562,11 @@ void http_request(void)
     // if(get_after_put_flag)
     // {
     //     get_after_put_flag = false;
-    //     result = send_http_example_request(https_client,http_client_method,HTTP_GET_PATH_AFTER_PUT);
+    //     result = send_http_example_request(http_client,http_client_method,HTTP_GET_PATH_AFTER_PUT);
     // }
     // else
     // {
-    //     result = send_http_example_request(https_client,http_client_method,HTTP_PATH);
+    //     result = send_http_example_request(http_client,http_client_method,HTTP_PATH);
     // }
 
     // if( result != CY_RSLT_SUCCESS )

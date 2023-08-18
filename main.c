@@ -92,10 +92,10 @@ TaskHandle_t  UartTaskHandle = NULL;
 QueueHandle_t xUARTQueue = 0;
 
 /* HTTPS client task an Queue handles. */
-TaskHandle_t https_client_task_handle;
+TaskHandle_t http_client_task_handle;
 QueueHandle_t httpQueue = 0;
 
-// static cy_http_client_t https_client;
+// static cy_http_client_t http_client;
 
 /*******************************************************************
  * Function Implementations
@@ -146,8 +146,8 @@ int main(void)
     wiced_bt_stack_init (app_bt_management_callback, &wiced_bt_cfg_settings);
 
 	/* Starts the HTTP client. */
-    xTaskCreate(https_client_task, "HTTP Client", HTTPS_CLIENT_TASK_STACK_SIZE, (void *) &https_client,
-               HTTPS_CLIENT_TASK_PRIORITY, &https_client_task_handle);
+    xTaskCreate(http_client_task, "HTTP Client", HTTPS_CLIENT_TASK_STACK_SIZE, (void *) &http_client,
+               HTTPS_CLIENT_TASK_PRIORITY, &http_client_task_handle);
 
 	/* Initialize HTTP client queue */
 	httpQueue = xQueueCreate( 10, sizeof(uint8_t) );
@@ -259,7 +259,7 @@ static void uart_task(void *pvParameters)
 
 				case 'm': 			// Send HTTP POST to server
 					{
-						cy_rslt_t result = send_http_example_request(https_client,CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH);
+						cy_rslt_t result = send_http_example_request(http_client,CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH);
 						if( result != CY_RSLT_SUCCESS )
 						{
 							ERR_INFO(("Failed to send the http request.\n"));
