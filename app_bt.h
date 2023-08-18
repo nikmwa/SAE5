@@ -33,10 +33,10 @@ static uint16_t serviceStartHandle = 0x0001;
 static uint16_t serviceEndHandle = 0xFFFF;
 
 typedef struct {
-uint16_t startHandle;
-uint16_t endHandle;
-uint16_t valHandle;
-uint16_t cccdHandle;
+    uint16_t startHandle;
+    uint16_t endHandle;
+    uint16_t valHandle;
+    uint16_t cccdHandle;
 } charHandle_t;
 
 static const uint8_t ledUUID[] = { __UUID_CHARACTERISTIC_PSOC_LED };
@@ -53,23 +53,19 @@ static uint32_t charHandleCount;
  ***************************************************************************/
 
 /* Callback function for Bluetooth stack management type events */
-wiced_bt_dev_status_t app_bt_management_callback             (wiced_bt_management_evt_t event, wiced_bt_management_evt_data_t *p_event_data);
+wiced_bt_dev_status_t app_bt_management_callback    (wiced_bt_management_evt_t event, wiced_bt_management_evt_data_t *p_event_data);
 
-/* GATT Event Callback and Handler Functions */
-wiced_bt_gatt_status_t app_bt_gatt_event_callback            (wiced_bt_gatt_evt_t event, wiced_bt_gatt_event_data_t *p_event_data);
-
-wiced_bt_gatt_status_t app_bt_connect_event_handler          (wiced_bt_gatt_connection_status_t *p_conn_status);
-
-void scanCallback													(wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_data);
+/* Callback function for BLE scanning */
+void BLEScanCallback			                    (wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_data);
 
 /*Discovery functions*/
-void startBTServiceDiscovery(void);
-void startBTCharacteristicDiscovery(void);
-void startBTDescriptorDiscovery(void);
+void startBTServiceDiscovery                        (void);
+void startBTCharacteristicDiscovery                 (void);
+void startBTDescriptorDiscovery                     (void);
 
 /* Helper functions to allocate/free buffers for GATT operations */
-uint8_t 					*app_bt_alloc_buffer(uint16_t len);
-void 					app_bt_free_buffer(uint8_t *p_data);
+uint8_t *app_bt_alloc_buffer                        (uint16_t len);
+void app_bt_free_buffer                             (uint8_t *p_data);
 
 #endif /* APP_BT_H_ */
 

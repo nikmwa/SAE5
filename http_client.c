@@ -298,7 +298,8 @@ void http_client_task( void * pvParameters )
  * Function Name: send_http_example_request
  *******************************************************************************
  * Summary:
- *  The function handles an http send operation.
+ *  The function handles an http send POST operation to the server.
+ *  Sent data: temperature: 25+rand()%10
  *
  * Parameters:
  *  void
@@ -382,7 +383,8 @@ cy_rslt_t send_http_example_request( cy_http_client_t handle, cy_http_client_met
  * Function Name: send_http_counter_request
  *******************************************************************************
  * Summary:
- *  The function handles an http send operation for the counter.
+ *  The function handles an http send POST operation to the server.
+ *  Sent data: counter: count
  *
  * Parameters:
  *  void

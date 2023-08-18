@@ -35,9 +35,6 @@
 #include "cyhal.h"
 #include "cybsp.h"
 #include "cy_retarget_io.h"
-#include "http_client.h"
-#include "cy_http_client_api.h"
-#include "cy_log.h"
 
 /* Library for malloc and free */
 #include "stdlib.h"
@@ -50,7 +47,7 @@
 /* btstack */
 #include "wiced_bt_stack.h"
 
-/* App utilities */
+/* Bluetooth app utilities and functions */
 #include "app_bt_utils.h"
 #include "app_bt.h"
 
@@ -58,14 +55,16 @@
 #include "cycfg_bt_settings.h"
 #include "cycfg_gap.h"
 
+/* HTTP client functions */
+#include "http_client.h"
+#include "cy_http_client_api.h"
+
 /*******************************************************************
  * Macros to assist development of the exercises
  ******************************************************************/
 #ifndef CYBSP_USER_LED2
 #define CYBSP_USER_LED2 P10_0
 #endif
-
-#define UART_INPUT true
 
 #define TASK_STACK_SIZE (4096u)
 #define	TASK_PRIORITY 	(5u)
@@ -78,24 +77,19 @@
  * Function Prototypes
  ******************************************************************/
 
-#if (UART_INPUT == true)
 /* Tasks to handle UART */
 static void rx_cback(void *handler_arg, cyhal_uart_event_t event); /* Callback for data received from UART */
 static void uart_task(void *pvParameters);
-#endif
 
 /*******************************************************************
  * Global/Static Variables
  ******************************************************************/
 /*UART task and Queue handles */
-TaskHandle_t  UartTaskHandle = NULL;
-QueueHandle_t xUARTQueue = 0;
+static TaskHandle_t  UartTaskHandle = NULL;
+static QueueHandle_t xUARTQueue = 0;
 
-/* HTTPS client task an Queue handles. */
-TaskHandle_t http_client_task_handle;
-QueueHandle_t httpQueue = 0;
-
-// static cy_http_client_t http_client;
+/* HTTPS client task handle */
+static TaskHandle_t HTTPClientTaskHandle;
 
 /*******************************************************************
  * Function Implementations
@@ -122,37 +116,19 @@ int main(void)
     cy_retarget_io_init(CYBSP_DEBUG_UART_TX, CYBSP_DEBUG_UART_RX,\
                         CY_RETARGET_IO_BAUDRATE);
 
-    /* Init QSPI and enable XIP to get the Wi-Fi firmware from the QSPI NOR flash */
-    #if defined(CY_ENABLE_XIP_PROGRAM)
-        const uint32_t bus_frequency = 50000000lu;
-
-        cy_serial_flash_qspi_init(smifMemConfigs[0], CYBSP_QSPI_D0, CYBSP_QSPI_D1,
-                                      CYBSP_QSPI_D2, CYBSP_QSPI_D3, NC, NC, NC, NC,
-                                      CYBSP_QSPI_SCK, CYBSP_QSPI_SS, bus_frequency);
-
-        cy_serial_flash_qspi_enable_xip(true);
-    #endif
-
 	/* Initialize pin to indicate scanning */
     cyhal_gpio_init(CYBSP_USER_LED2,CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, CYBSP_LED_STATE_OFF);
-
-	// /* Log output level */
-	// cy_log_set_all_levels(CY_LOG_DEBUG);
 
     /* Configure platform specific settings for the BT device */
     cybt_platform_config_init(&cybsp_bt_platform_cfg);
 
-    /* Initialize stack and register the callback function */
+    /* Initialize BT stack and register the callback function */
     wiced_bt_stack_init (app_bt_management_callback, &wiced_bt_cfg_settings);
 
 	/* Starts the HTTP client. */
     xTaskCreate(http_client_task, "HTTP Client", HTTPS_CLIENT_TASK_STACK_SIZE, (void *) &http_client,
-               HTTPS_CLIENT_TASK_PRIORITY, &http_client_task_handle);
+               HTTPS_CLIENT_TASK_PRIORITY, &HTTPClientTaskHandle);
 
-	/* Initialize HTTP client queue */
-	httpQueue = xQueueCreate( 10, sizeof(uint8_t) );
-
-	#if (UART_INPUT == true)
 	/* Setup UART user input interface */
 	xUARTQueue = xQueueCreate( 10, sizeof(uint8_t) );
 	cyhal_uart_register_callback(&cy_retarget_io_uart_obj, rx_cback, NULL); /* Register UART Rx callback */
@@ -160,7 +136,6 @@ int main(void)
 	xTaskCreate (uart_task, "UartTask", TASK_STACK_SIZE, NULL, TASK_PRIORITY, &UartTaskHandle); /* Start task */
 	uint8_t helpCommand = '?';
 	xQueueSend( xUARTQueue, &helpCommand, 0); /* Print out list of commands */
-	#endif
 
     /* Start the FreeRTOS scheduler */
     vTaskStartScheduler() ;
@@ -170,8 +145,6 @@ int main(void)
 }
 
 
-
-#if (UART_INPUT == true)
 /*******************************************************************************
 * Function Name: uart_task()
 ********************************************************************************
@@ -198,11 +171,11 @@ static void uart_task(void *pvParameters)
             switch (readbyte)
 			{
 				case 's':			// Turn on scanning
-					wiced_bt_ble_scan(BTM_BLE_SCAN_TYPE_HIGH_DUTY,TRUE,scanCallback);
+					wiced_bt_ble_scan(BTM_BLE_SCAN_TYPE_HIGH_DUTY,TRUE,BLEScanCallback);
 					break;
 
 				case 'S':			// Turn off scanning
-					wiced_bt_ble_scan(BTM_BLE_SCAN_TYPE_NONE,TRUE,scanCallback);
+					wiced_bt_ble_scan(BTM_BLE_SCAN_TYPE_NONE,TRUE,BLEScanCallback);
 					break;
 
 				case 'd': 			// Disconnect
@@ -327,6 +300,5 @@ void rx_cback(void *handler_arg, cyhal_uart_event_t event)
 	/* Yield current task if a higher priority task is now unblocked */
 	portYIELD_FROM_ISR(xYieldRequired);
 }
-#endif
 
 /* [] END OF FILE */

@@ -3,20 +3,39 @@
 /* FreeRTOS header file */
 #include "FreeRTOS.h"
 #include <task.h>
+
 #include "cy_wcm.h"
 #include "cybsp.h"
 #include "cy_network_mw_core.h"
 #include "cyhal_gpio.h"
+#include <stdio.h>
+
+/* Bluetooth */
 #include "wiced_bt_dev.h"
 #include "wiced_bt_gatt.h"
 #include "cycfg_gap.h"
-#include <stdio.h>
+
+
 /* Library for malloc and free */
 #include "stdlib.h"
 
+/* HTTP client */
 #include "http_client.h"
 #include "cy_http_client_api.h"
 
+/******************************************************
+ *               Function prototypes
+ ******************************************************/
+
+/* GATT Event Callback and Handler Functions */
+wiced_bt_gatt_status_t app_bt_gatt_event_callback            (wiced_bt_gatt_evt_t event, wiced_bt_gatt_event_data_t *p_event_data);
+
+wiced_bt_gatt_status_t app_bt_connect_event_handler          (wiced_bt_gatt_connection_status_t *p_conn_status);
+
+
+/******************************************************
+ *                   Variables
+ ******************************************************/
 uint16_t bt_conn_id;
 uint8_t ledStatus;
 
@@ -317,7 +336,7 @@ wiced_bt_gatt_status_t app_bt_connect_event_handler(wiced_bt_gatt_connection_sta
             printf("GATT_CONNECTION_STATUS_EVT: Connect BDA ");
            	print_bd_address(p_conn_status->bd_addr);
 			printf("Connection ID %d\n", p_conn_status->conn_id );
-            conn_id = p_conn_status->conn_id;
+            bt_conn_id = p_conn_status->conn_id;
 
 			cyhal_gpio_write(CYBSP_USER_LED2,CYBSP_LED_STATE_ON);
 
@@ -348,9 +367,9 @@ wiced_bt_gatt_status_t app_bt_connect_event_handler(wiced_bt_gatt_connection_sta
 }
 
 /*******************************************************************************
-* Function Name: scanCallback(p_scan_result, *p_adv_data)
+* Function Name: BLEScanCallback(p_scan_result, *p_adv_data)
 ********************************************************************************/
-void scanCallback(wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_data)
+void BLEScanCallback(wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_data)
 {
 	#define MAX_ADV_NAME_LEN	(28) 		/* Maximum possible name length since flags take 3 bytes and max packet is 31. */
 	#define SEARCH_DEVICE_NAME	"aly_per"	/* Name of device to search for */
@@ -374,7 +393,7 @@ void scanCallback(wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_dat
 			p_scan_result->ble_addr_type,
 			BLE_CONN_MODE_HIGH_DUTY,
 			WICED_TRUE);
-		wiced_bt_ble_scan( BTM_BLE_SCAN_TYPE_NONE, WICED_TRUE, scanCallback );
+		wiced_bt_ble_scan( BTM_BLE_SCAN_TYPE_NONE, WICED_TRUE, BLEScanCallback );
 	}
 }
 
