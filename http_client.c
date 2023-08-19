@@ -212,8 +212,8 @@ static cy_rslt_t configure_http_client(cy_http_client_t* http_client)
 
 
 
-    server_info.host_name = HTTPS_SERVER_HOST;
-    server_info.port = HTTPS_PORT;
+    server_info.host_name = HTTP_SERVER_HOST;
+    server_info.port = HTTP_PORT;
 
     /* Initialize the HTTP Client Library. */
     result = cy_http_client_init();
@@ -365,7 +365,7 @@ cy_rslt_t send_http_example_request( cy_http_client_t handle, cy_http_client_met
                    "Response Headers:\n %.*s\n"
                    "Response Status :\n %u \n"
                    "Response Body   :\n %.*s\n",
-                   ( int ) sizeof(HTTPS_SERVER_HOST)-1, HTTPS_SERVER_HOST,
+                   ( int ) sizeof(HTTP_SERVER_HOST)-1, HTTP_SERVER_HOST,
                    ( int ) sizeof(request.resource_path) -1, request.resource_path,
                    ( int ) response.headers_len, response.header,
                    response.status_code,
@@ -450,7 +450,7 @@ cy_rslt_t send_http_counter_request( cy_http_client_t handle, cy_http_client_met
                    "Response Headers:\n %.*s\n"
                    "Response Status :\n %u \n"
                    "Response Body   :\n %.*s\n",
-                   ( int ) sizeof(HTTPS_SERVER_HOST)-1, HTTPS_SERVER_HOST,
+                   ( int ) sizeof(HTTP_SERVER_HOST)-1, HTTP_SERVER_HOST,
                    ( int ) sizeof(request.resource_path) -1, request.resource_path,
                    ( int ) response.headers_len, response.header,
                    response.status_code,
