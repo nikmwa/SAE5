@@ -26,9 +26,12 @@ Code pour la carte centrale qui communique avec les périphériques via Bluetoot
    - 'n' pour s'abonner au nombre d'appuis sur le bouton : cela enclenche l'envoi à la plateforme du nombre d'appuis via une requête HTTP 'POST'
    - 'm' pour envoyer une requête HTTP 'POST' de test
 
+### Travail à réaliser
+
+- Gérer la connexion bluetooth de plusieurs périphériques.
+
 ### Pistes d'amélioration 
 
 - Automatiser la connexion bluetooth et la découverte de services/caractéristiques au travers d'une machine à états.
-- Gérer la connexion bluetooth de plusieurs périphériques.
 - Gérer la transmission de la lecture de donnée provenant du capteur associé au périphérique (bouton d'abonnement + remontée des données notifiées).
 - Utiliser un autre protocole pour remonter les données au serveur (MQTT).
