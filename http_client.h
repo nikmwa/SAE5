@@ -82,7 +82,7 @@
                                                  } while(0);
 
 #define HTTP_PORT                               (8080)
-#define HTTP_SERVER_HOST                        "192.168.1.8"
+#define HTTP_SERVER_HOST                        "192.168.1.9"
 #define TRANSPORT_SEND_RECV_TIMEOUT_MS           (5000)
 #define HTTP_GET_BUFFER_LENGTH                   (2048)
 #define ASCII_INTEGER_DIFFERENCE                 (48)
