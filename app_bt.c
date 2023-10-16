@@ -372,7 +372,7 @@ wiced_bt_gatt_status_t app_bt_connect_event_handler(wiced_bt_gatt_connection_sta
 void BLEScanCallback(wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_data)
 {
 	#define MAX_ADV_NAME_LEN	(28) 		/* Maximum possible name length since flags take 3 bytes and max packet is 31. */
-	#define SEARCH_DEVICE_NAME	"aly_per"	/* Name of device to search for */
+	#define SEARCH_DEVICE_NAME	"SolarLife"	/* Name of device to search for */
 
 	uint8_t length;
 	uint8_t *p_name = NULL;
