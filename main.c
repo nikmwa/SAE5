@@ -178,21 +178,21 @@ static void uart_task(void *pvParameters)
 					break;
 
 				case 'r': 			// Read LED status
-					wiced_bt_gatt_client_send_read_handle(bt_conn_id,ledChar.valHandle,0,&ledStatus,sizeof(ledStatus),GATT_AUTH_REQ_NONE);
+					wiced_bt_gatt_client_send_read_handle(bt_conn_id,ledChar.valHandle,0,&ledStatus,32*sizeof(uint8_t),GATT_AUTH_REQ_NONE);
 					break;
 				
 				case 'n': 			//Set CCCD
 					{
 						uint8_t writeData[2] = {0};
 						writeData[0]=GATT_CLIENT_CONFIG_NOTIFICATION;/* Values are sent little endian */
-						writeAttribute(bt_conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
+						writeAttribute(bt_conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint16_t), writeData);
 					}
 					break;
 				case 'N':			//Unset CCCD
 					{
 						uint8_t writeData[2] = {0};
 						writeData[0]=GATT_CLIENT_CONFIG_NONE;/* Values are sent little endian */
-						writeAttribute(bt_conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
+						writeAttribute(bt_conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint16_t), writeData);
 					}
 					break;
 				case 'q': 			//Start service discovery

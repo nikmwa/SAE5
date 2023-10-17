@@ -17,16 +17,16 @@ typedef void (*pfn_free_buffer_t)(uint8_t *);
 
 /* UUIDs for service, characteristic and descriptor discovery */
 
-#define __UUID_SERVICE_PSOC                          0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB
-#define __UUID_CHARACTERISTIC_PSOC_LED               0x00, 0x00, 0xFF, 0x03, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB
-#define __UUID_CHARACTERISTIC_PSOC_BUTTON_COUNT      0x00, 0x00, 0xFF, 0x01, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB
+#define __UUID_SERVICE_PSOC                          0x00, 0xFF
+#define __UUID_CHARACTERISTIC_PSOC_LED               0x04, 0xFF
+#define __UUID_CHARACTERISTIC_PSOC_BUTTON_COUNT      0x03, 0xFF
 #define __UUID_DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION    0x2902
 
 /******************************************************************************
  *                                Constants
  ******************************************************************************/
 extern uint16_t bt_conn_id;
-extern uint8_t ledStatus;
+extern uint8_t ledStatus[];
 
 static const uint8_t serviceUUID[] = { __UUID_SERVICE_PSOC};
 static uint16_t serviceStartHandle = 0x0001;
