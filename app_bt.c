@@ -38,7 +38,6 @@ wiced_bt_gatt_status_t app_bt_connect_event_handler          (wiced_bt_gatt_conn
  ******************************************************/
 uint16_t bt_conn_id;
 uint8_t ledStatus[];
-uint8_t dataTest[];
 
 charHandle_t ledChar;
 charHandle_t counterChar;
@@ -188,36 +187,9 @@ wiced_bt_gatt_status_t app_bt_gatt_event_callback( wiced_bt_gatt_evt_t event, wi
 			{
 				if(p_event_data->operation_complete.response_data.handle == counterChar.valHandle)
     			{
-    				printf("Count notification received: handle= %d\n", p_event_data->operation_complete.response_data.att_value.handle);
-    				printf("Count notification received: len= %d\n", p_event_data->operation_complete.response_data.att_value.len);
-    				printf("Count notification received: offset= %d\n", p_event_data->operation_complete.response_data.att_value.offset );
-    			    memcpy( dataTest, p_event_data->operation_complete.response_data.att_value.p_data, p_event_data->operation_complete.response_data.att_value.len );
-					for (int i=0; i < p_event_data->operation_complete.response_data.att_value.len; i++ ) // Dump the bytes to the screen
-					{
-						printf( "%02X ", dataTest[i] );
-					}
-					printf( "\r\n" );
-				} else if (p_event_data->operation_complete.response_data.handle == 0x011) // data notification handle
-				{
-					memcpy( dataTest, p_event_data->operation_complete.response_data.att_value.p_data, p_event_data->operation_complete.response_data.att_value.len );
-					for (int i=0; i < p_event_data->operation_complete.response_data.att_value.len; i++ ) // Dump the bytes to the screen
-					{
-						printf( "%02X ", dataTest[i] );
-					}
-					printf( "\r\n" );
-				} else {
-					printf("I'm here !: 0x%x\n", p_event_data->operation_complete.response_data.handle);
-				}
-				
-					// send_http_counter_request(http_client,CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH,*p_event_data->operation_complete.response_data.att_value.p_data);
-			} else if (GATTC_OPTYPE_WRITE_WITH_RSP == p_event_data->operation_complete.op)
-			{
-				printf("Received write response with length = %d...\n", p_event_data->operation_complete.response_data.att_value.len);
-				memcpy( dataTest, p_event_data->operation_complete.response_data.att_value.p_data, p_event_data->operation_complete.response_data.att_value.len );
-				for (int i=0; i < p_event_data->operation_complete.response_data.att_value.len; i++ ) // Dump the bytes to the screen
-				{
-					printf( "%02X ", dataTest[i] );
-				}
+    				printf("Count notification received: %d\n", *p_event_data->operation_complete.response_data.att_value.p_data);
+    			    // send_http_counter_request(http_client,CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH,*p_event_data->operation_complete.response_data.att_value.p_data); 
+                }
 			}
     	}
     	else
@@ -464,20 +436,6 @@ void writeAttribute( uint16_t bt_conn_id, uint16_t handle, uint16_t offset, wice
 		write_params.len = len;
 
 		wiced_bt_gatt_client_send_write(bt_conn_id, GATT_REQ_WRITE, &write_params, val, NULL);
-	}
-}
-
-void writeAttributeCmd( uint16_t bt_conn_id, uint16_t handle, uint16_t offset, wiced_bt_gatt_auth_req_t auth_req, uint16_t len, uint8_t* val )
-{
-	if  (bt_conn_id && handle ) 
-	{
-		wiced_bt_gatt_write_hdr_t write_params;
-		write_params.handle = handle;
-		write_params.offset = offset;
-		write_params.auth_req = auth_req;
-		write_params.len = len;
-
-		wiced_bt_gatt_client_send_write(bt_conn_id, GATT_CMD_WRITE, &write_params, val, NULL);
 	}
 }
 
