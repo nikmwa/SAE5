@@ -177,15 +177,17 @@ static void uart_task(void *pvParameters)
 					wiced_bt_gatt_disconnect(bt_conn_id);
 					break;
 
-				case 'r': 			// Read LED status
-					wiced_bt_gatt_client_send_read_handle(bt_conn_id,ledChar.valHandle,0,&ledStatus,32*sizeof(uint8_t),GATT_AUTH_REQ_NONE);
+				case 'r': 			// Send write command on 0x0014
+					uint8_t writeData[8] = {0xfe, 0x04, 0x30, 0x30, 0x00, 0x2b, 0xab, 0x15}; //little endian
+					writeAttribute(bt_conn_id, 0x0014, 0, GATT_AUTH_REQ_NONE, 8*sizeof(uint8_t), writeData);
+					//wiced_bt_gatt_client_send_read_handle(bt_conn_id,ledChar.valHandle,0,&ledStatus,sizeof(uint8_t),GATT_AUTH_REQ_NONE);
 					break;
 				
 				case 'n': 			//Set CCCD
 					{
 						uint8_t writeData[2] = {0};
 						writeData[0]=GATT_CLIENT_CONFIG_NOTIFICATION;/* Values are sent little endian */
-						writeAttribute(bt_conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint16_t), writeData);
+						writeAttribute(bt_conn_id, 0x0012, 0, GATT_AUTH_REQ_NONE, sizeof(uint16_t), writeData);
 					}
 					break;
 				case 'N':			//Unset CCCD

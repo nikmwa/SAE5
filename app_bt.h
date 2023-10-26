@@ -18,8 +18,8 @@ typedef void (*pfn_free_buffer_t)(uint8_t *);
 /* UUIDs for service, characteristic and descriptor discovery */
 
 #define __UUID_SERVICE_PSOC                          0x00, 0xFF
-#define __UUID_CHARACTERISTIC_PSOC_LED               0x04, 0xFF
-#define __UUID_CHARACTERISTIC_PSOC_BUTTON_COUNT      0x03, 0xFF
+#define __UUID_CHARACTERISTIC_PSOC_LED               0x00, 0x2A
+#define __UUID_CHARACTERISTIC_PSOC_BUTTON_COUNT      0x01, 0xFF
 #define __UUID_DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION    0x2902
 
 /******************************************************************************
@@ -66,6 +66,9 @@ void startBTDescriptorDiscovery                     (void);
 /* Helper functions to allocate/free buffers for GATT operations */
 uint8_t *app_bt_alloc_buffer                        (uint16_t len);
 void app_bt_free_buffer                             (uint8_t *p_data);
+
+void writeAttribute                                 (uint16_t bt_conn_id, uint16_t handle, uint16_t offset, wiced_bt_gatt_auth_req_t auth_req, uint16_t len, uint8_t* val );
+void writeAttributeCmd                              (uint16_t bt_conn_id, uint16_t handle, uint16_t offset, wiced_bt_gatt_auth_req_t auth_req, uint16_t len, uint8_t* val );
 
 #endif /* APP_BT_H_ */
 
