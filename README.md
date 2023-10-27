@@ -34,7 +34,6 @@ Code pour la carte centrale qui communique avec les périphériques via Bluetoot
 
 - Gérer la connexion bluetooth de plusieurs périphériques.
 - Gérer la transmission de la lecture de donnée provenant du capteur associé au périphérique (bouton d'abonnement + remontée des données notifiées).
-- Pour le module MPPT : remonter d'autres données que la tension batterie.
 
 ### Pistes d'amélioration 
 
