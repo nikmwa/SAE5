@@ -59,8 +59,8 @@
 /* Wi-Fi Credentials: Modify WIFI_SSID and WIFI_PASSWORD to match your Wi-Fi network
  * Credentials.
  */
-#define WIFI_SSID                                "dlink-5326b0"
-#define WIFI_PASSWORD                            "836ujqn6v8"
+#define WIFI_SSID                                "NETGEAR0-5G"
+#define WIFI_PASSWORD                            "departementGEII"
 
 /* Security type of the Wi-Fi access point. See 'cy_wcm_security_t' structure
  * in "cy_wcm.h" for more details.

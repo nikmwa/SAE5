@@ -120,9 +120,9 @@ int main(void)
     /* Initialize BT stack and register the callback function */
     wiced_bt_stack_init (app_bt_management_callback, &wiced_bt_cfg_settings);
 
-	// /* Starts the HTTP client. */
-    // xTaskCreate(http_client_task, "HTTP Client", HTTPS_CLIENT_TASK_STACK_SIZE, (void *) &http_client,
-    //            HTTPS_CLIENT_TASK_PRIORITY, &HTTPClientTaskHandle);
+	/* Starts the HTTP client. */
+    xTaskCreate(http_client_task, "HTTP Client", HTTPS_CLIENT_TASK_STACK_SIZE, (void *) &http_client,
+                HTTPS_CLIENT_TASK_PRIORITY, &HTTPClientTaskHandle);
 
 	/* Setup UART user input interface */
 	xUARTQueue = xQueueCreate( 10, sizeof(uint8_t) );
