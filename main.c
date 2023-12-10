@@ -66,7 +66,7 @@
 #define	TASK_PRIORITY 	(5u)
 
 #define HTTPS_CLIENT_TASK_STACK_SIZE        (5 * 1024)
-#define HTTPS_CLIENT_TASK_PRIORITY          (3)
+#define HTTPS_CLIENT_TASK_PRIORITY          (1)
 
 /*******************************************************************
  * Function Prototypes
@@ -127,7 +127,7 @@ int main(void)
 	/* Setup UART user input interface */
 	xUARTQueue = xQueueCreate( 10, sizeof(uint8_t) );
 	cyhal_uart_register_callback(&cy_retarget_io_uart_obj, rx_cback, NULL); /* Register UART Rx callback */
-	cyhal_uart_enable_event(&cy_retarget_io_uart_obj, CYHAL_UART_IRQ_RX_NOT_EMPTY , 1, TRUE); /* Enable Rx interrupt */
+	cyhal_uart_enable_event(&cy_retarget_io_uart_obj, CYHAL_UART_IRQ_RX_NOT_EMPTY , 3, TRUE); /* Enable Rx interrupt */
 	xTaskCreate (uart_task, "UartTask", TASK_STACK_SIZE, NULL, TASK_PRIORITY, &UartTaskHandle); /* Start task */
 	uint8_t helpCommand = '?';
 	xQueueSend( xUARTQueue, &helpCommand, 0); /* Print out list of commands */
