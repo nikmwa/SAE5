@@ -37,7 +37,7 @@ wiced_bt_gatt_status_t app_bt_connect_event_handler          (wiced_bt_gatt_conn
  *                   Variables
  ******************************************************/
 uint16_t bt_conn_id;
-uint8_t ledStatus;
+uint8_t ledStatus[];
 
 charHandle_t ledChar;
 charHandle_t counterChar;
@@ -188,7 +188,7 @@ wiced_bt_gatt_status_t app_bt_gatt_event_callback( wiced_bt_gatt_evt_t event, wi
 				if(p_event_data->operation_complete.response_data.handle == counterChar.valHandle)
     			{
     				printf("Count notification received: %d\n", *p_event_data->operation_complete.response_data.att_value.p_data);
-    			    send_http_counter_request(http_client,CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH,*p_event_data->operation_complete.response_data.att_value.p_data); 
+    			    // send_http_counter_request(http_client,CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH,*p_event_data->operation_complete.response_data.att_value.p_data); 
                 }
 			}
     	}
@@ -225,7 +225,7 @@ wiced_bt_gatt_status_t app_bt_gatt_event_callback( wiced_bt_gatt_evt_t event, wi
 			serviceEndHandle = p_event_data->discovery_result.discovery_data.group_value.e_handle;
 			printf( "Discovered Service Start=0x%04X End=0x%04X\r\n", serviceStartHandle, serviceEndHandle );
 		} 
-		
+
 		//////////////// Characteristics Discovery /////////////////
 		if (GATT_DISCOVER_CHARACTERISTICS == p_event_data->discovery_result.discovery_type)
 		{
@@ -234,7 +234,7 @@ wiced_bt_gatt_status_t app_bt_gatt_event_callback( wiced_bt_gatt_evt_t event, wi
 			charHandles[charHandleCount].endHandle = serviceEndHandle; /* Assume this is the last characteristic in the service so its end handle is at the end of the service group */
 			
 			printf( "Char Handle=0x%04X Value Handle=0x%04X ", charHandles[charHandleCount].startHandle, charHandles[charHandleCount].valHandle);
-
+			
 			if( charHandleCount != 0 )
 			{
 				charHandles[charHandleCount-1].endHandle =	charHandles[charHandleCount].startHandle-1;
@@ -245,6 +245,31 @@ wiced_bt_gatt_status_t app_bt_gatt_event_callback( wiced_bt_gatt_evt_t event, wi
 			{
 				printf( "This is really bad.. we discovered more characteristics than we can save\r\n" );
 			}
+
+			/*Look for 2 byte UUIDs */
+			if ( p_event_data->discovery_result.discovery_data.characteristic_declaration.char_uuid.len == LEN_UUID_16)
+			{
+				if( memcmp( ledUUID, p_event_data->discovery_result.discovery_data.characteristic_declaration.char_uuid.uu.uuid128, LEN_UUID_16 ) == 0 ) // If it is the LED characteristic
+				{
+                    ledChar.startHandle = p_event_data->discovery_result.discovery_data.characteristic_declaration.handle;
+					ledChar.valHandle =   p_event_data->discovery_result.discovery_data.characteristic_declaration.val_handle;
+					printf( "   LED   ");
+				}
+
+				if( memcmp( counterUUID, p_event_data->discovery_result.discovery_data.characteristic_declaration.char_uuid.uu.uuid128,LEN_UUID_16 ) == 0 ) // If it is the button count characteristic
+				{
+                    counterChar.startHandle = p_event_data->discovery_result.discovery_data.characteristic_declaration.handle;
+					counterChar.valHandle =  p_event_data->discovery_result.discovery_data.characteristic_declaration.val_handle;
+					printf( "   BTN   ");
+				}
+
+				printf( "UUID: ");
+				for (int i=0; i < p_event_data->discovery_result.discovery_data.characteristic_declaration.char_uuid.len; i++ ) // Dump the UUID bytes to the screen
+				{
+					printf( "%02X ", p_event_data->discovery_result.discovery_data.characteristic_declaration.char_uuid.uu.uuid128[i] );
+				}
+			}
+
 
 			/* Look only for 16 byte UUIDs */
 			if( p_event_data->discovery_result.discovery_data.characteristic_declaration.char_uuid.len == LEN_UUID_128)
@@ -372,7 +397,7 @@ wiced_bt_gatt_status_t app_bt_connect_event_handler(wiced_bt_gatt_connection_sta
 void BLEScanCallback(wiced_bt_ble_scan_results_t *p_scan_result, uint8_t *p_adv_data)
 {
 	#define MAX_ADV_NAME_LEN	(28) 		/* Maximum possible name length since flags take 3 bytes and max packet is 31. */
-	#define SEARCH_DEVICE_NAME	"aly_per"	/* Name of device to search for */
+	#define SEARCH_DEVICE_NAME	"SolarLife"	/* Name of device to search for */
 
 	uint8_t length;
 	uint8_t *p_name = NULL;
@@ -420,8 +445,8 @@ void startBTServiceDiscovery( void )
 	memset( &discovery_param, 0, sizeof( discovery_param ) );
 	discovery_param.s_handle = 0x0001;
 	discovery_param.e_handle = 0xFFFF;
-	discovery_param.uuid.len = LEN_UUID_128;
-	memcpy( &discovery_param.uuid.uu.uuid128, serviceUUID, LEN_UUID_128 );
+	discovery_param.uuid.len = LEN_UUID_16;
+	memcpy( &discovery_param.uuid.uu.uuid16, serviceUUID, LEN_UUID_16 );
 
 	wiced_bt_gatt_status_t status = wiced_bt_gatt_client_send_discover(bt_conn_id,GATT_DISCOVER_SERVICES_BY_UUID, &discovery_param);
 	printf( "Started service discovery. Status: 0x%02X\r\n", status );

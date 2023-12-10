@@ -2,6 +2,9 @@
 
 Code pour la carte centrale qui communique avec les périphériques via Bluetooth et transmet les données à la plateforme IoT via HTTP.
 
+* Exemple communication LED+bouton avec **autre carte PSoC 6** : branche *master* 
+* Exemple communication avec **module solaire MPPT** : branche *communication_MPPT*
+
 ### Matériel et logiciel requis
 - Kit de prototypage PSoC : CY8CPROTO-062-4343W
 - ModusToolbox 3.1
@@ -25,6 +28,7 @@ Code pour la carte centrale qui communique avec les périphériques via Bluetoot
    - 'r' pour lire l'état de la LED utilisateur
    - 'n' pour s'abonner au nombre d'appuis sur le bouton : cela enclenche l'envoi à la plateforme du nombre d'appuis via une requête HTTP 'POST'
    - 'm' pour envoyer une requête HTTP 'POST' de test
+
 
 ### Travail à réaliser
 

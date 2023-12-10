@@ -66,7 +66,7 @@
 #define	TASK_PRIORITY 	(5u)
 
 #define HTTPS_CLIENT_TASK_STACK_SIZE        (5 * 1024)
-#define HTTPS_CLIENT_TASK_PRIORITY          (1)
+#define HTTPS_CLIENT_TASK_PRIORITY          (3)
 
 /*******************************************************************
  * Function Prototypes
@@ -122,12 +122,12 @@ int main(void)
 
 	/* Starts the HTTP client. */
     xTaskCreate(http_client_task, "HTTP Client", HTTPS_CLIENT_TASK_STACK_SIZE, (void *) &http_client,
-               HTTPS_CLIENT_TASK_PRIORITY, &HTTPClientTaskHandle);
+                HTTPS_CLIENT_TASK_PRIORITY, &HTTPClientTaskHandle);
 
 	/* Setup UART user input interface */
 	xUARTQueue = xQueueCreate( 10, sizeof(uint8_t) );
 	cyhal_uart_register_callback(&cy_retarget_io_uart_obj, rx_cback, NULL); /* Register UART Rx callback */
-	cyhal_uart_enable_event(&cy_retarget_io_uart_obj, CYHAL_UART_IRQ_RX_NOT_EMPTY , 3, TRUE); /* Enable Rx interrupt */
+	cyhal_uart_enable_event(&cy_retarget_io_uart_obj, CYHAL_UART_IRQ_RX_NOT_EMPTY , 1, TRUE); /* Enable Rx interrupt */
 	xTaskCreate (uart_task, "UartTask", TASK_STACK_SIZE, NULL, TASK_PRIORITY, &UartTaskHandle); /* Start task */
 	uint8_t helpCommand = '?';
 	xQueueSend( xUARTQueue, &helpCommand, 0); /* Print out list of commands */
@@ -178,21 +178,21 @@ static void uart_task(void *pvParameters)
 					break;
 
 				case 'r': 			// Read LED status
-					wiced_bt_gatt_client_send_read_handle(bt_conn_id,ledChar.valHandle,0,&ledStatus,sizeof(ledStatus),GATT_AUTH_REQ_NONE);
+					wiced_bt_gatt_client_send_read_handle(bt_conn_id,ledChar.valHandle,0,&ledStatus,32*sizeof(uint8_t),GATT_AUTH_REQ_NONE);
 					break;
 				
 				case 'n': 			//Set CCCD
 					{
 						uint8_t writeData[2] = {0};
 						writeData[0]=GATT_CLIENT_CONFIG_NOTIFICATION;/* Values are sent little endian */
-						writeAttribute(bt_conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
+						writeAttribute(bt_conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint16_t), writeData);
 					}
 					break;
 				case 'N':			//Unset CCCD
 					{
 						uint8_t writeData[2] = {0};
 						writeData[0]=GATT_CLIENT_CONFIG_NONE;/* Values are sent little endian */
-						writeAttribute(bt_conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_SIGNED_NO_MITM, sizeof(uint16_t), writeData);
+						writeAttribute(bt_conn_id, counterChar.cccdHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint16_t), writeData);
 					}
 					break;
 				case 'q': 			//Start service discovery
