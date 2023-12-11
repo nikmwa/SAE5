@@ -59,13 +59,13 @@
 /* Wi-Fi Credentials: Modify WIFI_SSID and WIFI_PASSWORD to match your Wi-Fi network
  * Credentials.
  */
-#define WIFI_SSID                                "NETGEAR0-5G"
+#define WIFI_SSID                                "NETGEAR0-24G"
 #define WIFI_PASSWORD                            "departementGEII"
 
 /* Security type of the Wi-Fi access point. See 'cy_wcm_security_t' structure
  * in "cy_wcm.h" for more details.
  */
-#define WIFI_SECURITY_TYPE                       CY_WCM_SECURITY_OPEN
+#define WIFI_SECURITY_TYPE                       CY_WCM_SECURITY_WPA2_AES_PSK
 
 #define MAX_WIFI_RETRY_COUNT                     (3)
 
@@ -82,7 +82,7 @@
                                                  } while(0);
 
 #define HTTP_PORT                               (8080)
-#define HTTP_SERVER_HOST                        "192.168.1.9"
+#define HTTP_SERVER_HOST                        "192.168.0.2"
 #define TRANSPORT_SEND_RECV_TIMEOUT_MS           (5000)
 #define HTTP_GET_BUFFER_LENGTH                   (2048)
 #define ASCII_INTEGER_DIFFERENCE                 (48)
