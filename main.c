@@ -219,20 +219,6 @@ static void uart_task(void *pvParameters)
 					}
 					break;
 
-				case 'm': 			// Send HTTP example temperature to thingsboard server
-					{
-						cy_rslt_t result = send_http_example_request(http_client,CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH);
-						if( result != CY_RSLT_SUCCESS )
-						{
-							ERR_INFO(("Failed to send the http request.\n"));
-						}
-						else
-						{
-							printf("\r\n Successfully sent POST request to http server\r\n");
-						}
-					}
-				
-					break;
 				default:
 					printf( "Unrecognized command\r\n" );
 					/* No break - fall through and display help */
@@ -251,7 +237,6 @@ static void uart_task(void *pvParameters)
 					printf( "\t%c\tStart service discovery\r\n", 'q' );
 					printf( "\t%c\tStart characteristic discovery\r\n", 'w' );
 					printf( "\t%c\tStart descriptor discovery\r\n", 'e' );
-					printf( "\t%c\tSend test http request POST\r\n", 'm' );
 					printf( "\r\n" );
 					break;
 			}
