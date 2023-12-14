@@ -218,7 +218,11 @@ static void uart_task(void *pvParameters)
 					writeAttribute(bt_conn_id, ledChar.valHandle, 0, GATT_AUTH_REQ_NONE, sizeof(uint8_t), writeData);
 					}
 					break;
-
+				case 'm':
+					{
+						send_http_example_request(http_client, CY_HTTP_CLIENT_METHOD_POST,HTTP_PATH);
+						break;
+					}
 				default:
 					printf( "Unrecognized command\r\n" );
 					/* No break - fall through and display help */

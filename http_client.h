@@ -86,7 +86,7 @@
 #define TRANSPORT_SEND_RECV_TIMEOUT_MS           (5000)
 #define HTTP_GET_BUFFER_LENGTH                   (2048)
 #define ASCII_INTEGER_DIFFERENCE                 (48)
-#define HTTP_PATH                                "/api/v1/dxtPb9STbQBdLSDzU3Ad/telemetry"
+#define HTTP_PATH                                "/api/v1/kzbNRI2CnlfaBbWyOb84/telemetry"
 
 /* Wi-Fi re-connection time interval in milliseconds */
 #define WIFI_CONN_RETRY_INTERVAL_MSEC            (1000u)
