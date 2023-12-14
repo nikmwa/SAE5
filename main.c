@@ -241,6 +241,7 @@ static void uart_task(void *pvParameters)
 					printf( "\t%c\tStart service discovery\r\n", 'q' );
 					printf( "\t%c\tStart characteristic discovery\r\n", 'w' );
 					printf( "\t%c\tStart descriptor discovery\r\n", 'e' );
+					printf( "\t%c\tSend Test HTTP request\r\n", 'm' );
 					printf( "\r\n" );
 					break;
 			}
