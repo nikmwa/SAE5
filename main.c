@@ -139,6 +139,25 @@ int main(void)
     CY_ASSERT(0) ;
 }
 
+//TODO list:
+
+//Handle multiple devices
+//1. Create a list of devices (array of devices) that you can add to
+//2. When you find a device, add it to the list (BLEScanCallback)
+//3. When you want to connect to a device, use the list to find the device you want to connect to (modify BLEScanCallback to only update the list, not connect) (write a function to connect to a device)
+//4. When you want to disconnect from a device, use the list to find the device you want to disconnect from (modify app_bt_connect_event_handler to cycle through the list and disconnect from the device you want to disconnect from) (may b need to write a function to disconnect from a device)
+
+
+//when connected to a device to read/write a characteristic you need to:
+//1. once connected, start service discovery (startBTServiceDiscovery)
+//2. once service discovery is done, start characteristic discovery (startBTCharacteristicDiscovery)
+//3. once characteristic discovery is done, start descriptor discovery (startBTDescriptorDiscovery)
+//4. find in all the UUIDs the one that matches the UUID of the characteristic you want to read/write (sensors)
+//5. do something with the value
+
+
+
+
 
 /*******************************************************************************
 * Function Name: uart_task()
