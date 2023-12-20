@@ -51,7 +51,7 @@
 
 /***************** MQTT CLIENT CONNECTION CONFIGURATION MACROS *****************/
 /* MQTT Broker/Server address and port used for the MQTT connection. */
-#define MQTT_BROKER_ADDRESS               "192.168.0.2"
+#define MQTT_BROKER_ADDRESS               "192.168.0.12"
 #define MQTT_PORT                         1883
 
 /* Set this macro to 1 if a secure (TLS) connection to the MQTT Broker is  
@@ -60,8 +60,10 @@
 #define MQTT_SECURE_CONNECTION            ( 0 )
 
 /* Configure the user credentials to be sent as part of MQTT CONNECT packet */
-#define MQTT_USERNAME                     "username"
-#define MQTT_PASSWORD                     "password"
+#define MQTT_USERNAME                     "nopru"
+#define MQTT_PASSWORD                     "nopru"
+#define MQTT_CLIENT_IDENTIFIER "8ay6ltdroleczrcje3h7"
+
 
 
 /********************* MQTT MESSAGE CONFIGURATION MACROS **********************/

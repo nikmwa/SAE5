@@ -1,7 +1,8 @@
 /******************************************************************************
-* File Name:   subscriber_task.h
+* File Name: wifi_config.h
 *
-* Description: This file is the public interface of subscriber_task.c
+* Description: This file contains the configuration macros required for the
+*              Wi-Fi connection.
 *
 * Related Document: See README.md
 *
@@ -39,55 +40,29 @@
 * so agrees to indemnify Cypress against all liability.
 *******************************************************************************/
 
-#ifndef SUBSCRIBER_TASK_H_
-#define SUBSCRIBER_TASK_H_
+#ifndef WIFI_CONFIG_H_
+#define WIFI_CONFIG_H_
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "cy_mqtt_api.h"
+#include "cy_wcm.h"
 
 /*******************************************************************************
 * Macros
 ********************************************************************************/
-/* Task parameters for Subscriber Task. */
-#define SUBSCRIBER_TASK_PRIORITY           (2)
-#define SUBSCRIBER_TASK_STACK_SIZE         (1024 * 1)
+/* SSID of the Wi-Fi Access Point to which the MQTT client connects. */
+#define WIFI_SSID                         "MY_WIFI_SSID"
 
-/* 8-bit value denoting the device (LED) state. */
-#define DEVICE_ON_STATE                    (0x00u)
-#define DEVICE_OFF_STATE                   (0x01u)
+/* Passkey of the above mentioned Wi-Fi SSID. */
+#define WIFI_PASSWORD                     "MY_WIFI_PASSWORD"
 
-/*******************************************************************************
-* Global Variables
-********************************************************************************/
-/* Commands for the Subscriber Task. */
-typedef enum
-{
-    SUBSCRIBE_TO_TOPIC,
-    UNSUBSCRIBE_FROM_TOPIC,
-    UPDATE_DEVICE_STATE
-} subscriber_cmd_t;
+/* Security type of the Wi-Fi access point. See 'cy_wcm_security_t' structure
+ * in "cy_wcm.h" for more details.
+ */
+#define WIFI_SECURITY                     CY_WCM_SECURITY_WPA2_AES_PSK
 
-/* Struct to be passed via the subscriber task queue */
-typedef struct{
-    subscriber_cmd_t cmd;
-    uint8_t data;
-} subscriber_data_t;
+/* Maximum Wi-Fi re-connection limit. */
+#define MAX_WIFI_CONN_RETRIES             (120u)
 
-/*******************************************************************************
-* Extern Variables
-********************************************************************************/
-extern TaskHandle_t subscriber_task_handle;
-extern QueueHandle_t subscriber_task_q;
-extern uint32_t current_device_state;
+/* Wi-Fi re-connection time interval in milliseconds. */
+#define WIFI_CONN_RETRY_INTERVAL_MS       (5000)
 
-/*******************************************************************************
-* Function Prototypes
-********************************************************************************/
-void subscriber_task(void *pvParameters);
-void mqtt_subscription_callback(cy_mqtt_publish_info_t *received_msg_info);
-
-#endif /* SUBSCRIBER_TASK_H_ */
-
-/* [] END OF FILE */
+#endif /* WIFI_CONFIG_H_ */

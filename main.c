@@ -59,6 +59,13 @@
 #include "http_client.h"
 #include "cy_http_client_api.h"
 
+/* Fonctions MQTT*/
+#include "mqtt_client_config.h"
+#include "mqtt_task.h"
+
+#include "publisher_task.h"
+#include "subscriber_task.h"
+
 /*******************************************************************
  * Macros to assist development of the exercises
  ******************************************************************/
@@ -93,50 +100,70 @@ static TaskHandle_t HTTPClientTaskHandle;
 /*******************************************************************************
 * Function Name: int main( void )
 ********************************************************************************/
-int main(void)
+
+int main()
 {
-    cy_rslt_t result ;
+    cy_rslt_t result;
 
-    /* Initialize the board support package */
-    result = cybsp_init() ;
-    if (result != CY_RSLT_SUCCESS)
-    {
-        CY_ASSERT(0);
-    }
+#if defined (CY_DEVICE_SECURE)
+    cyhal_wdt_t wdt_obj;
 
-    /* Enable global interrupts */
+    /* Clear watchdog timer so that it doesn't trigger a reset */
+    result = cyhal_wdt_init(&wdt_obj, cyhal_wdt_get_max_timeout_ms());
+    CY_ASSERT(CY_RSLT_SUCCESS == result);
+    cyhal_wdt_free(&wdt_obj);
+#endif /* #if defined (CY_DEVICE_SECURE) */
+    /* Initialize the board support package. */
+    
+    result = cybsp_init();
+    CY_ASSERT(CY_RSLT_SUCCESS == result);
+
+    /* To avoid compiler warnings. */
+    (void) result;
+
+    /* Enable global interrupts. */
     __enable_irq();
 
-    /* Initialize retarget-io to use the debug UART port */
-    cy_retarget_io_init(CYBSP_DEBUG_UART_TX, CYBSP_DEBUG_UART_RX,\
+    /* Initialize retarget-io to use the debug UART port. */
+    cy_retarget_io_init(CYBSP_DEBUG_UART_TX, CYBSP_DEBUG_UART_RX,
                         CY_RETARGET_IO_BAUDRATE);
 
-	/* Initialize pin to indicate scanning */
-    cyhal_gpio_init(CYBSP_USER_LED,CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, CYBSP_LED_STATE_OFF);
+#if defined(CY_DEVICE_PSOC6A512K)
+    /* Initialize the QSPI serial NOR flash with clock frequency of 50 MHz. */
+    const uint32_t bus_frequency = 50000000lu;
+    cy_serial_flash_qspi_init(smifMemConfigs[0], CYBSP_QSPI_D0, CYBSP_QSPI_D1,
+                                  CYBSP_QSPI_D2, CYBSP_QSPI_D3, NC, NC, NC, NC,
+                                  CYBSP_QSPI_SCK, CYBSP_QSPI_SS, bus_frequency);
 
-    /* Configure platform specific settings for the BT device */
-    cybt_platform_config_init(&cybsp_bt_platform_cfg);
+    /* Enable the XIP mode to get the Wi-Fi firmware from the external flash. */
+    cy_serial_flash_qspi_enable_xip(true);
+#endif
 
-    /* Initialize BT stack and register the callback function */
-    wiced_bt_stack_init (app_bt_management_callback, &wiced_bt_cfg_settings);
+    /* \x1b[2J\x1b[;H - ANSI ESC sequence to clear screen. */
+    printf("\x1b[2J\x1b[;H");
+    printf("===============================================================\n");
+#if defined(COMPONENT_CM0P)
+    printf("CE229889 - MQTT Client running on CM0+\n");
+#endif
 
-	/* Starts the HTTP client. */
-    xTaskCreate(http_client_task, "HTTP Client", HTTPS_CLIENT_TASK_STACK_SIZE, (void *) &http_client,
-                HTTPS_CLIENT_TASK_PRIORITY, &HTTPClientTaskHandle);
+#if defined(COMPONENT_CM4)
+    printf("CE229889 - MQTT Client running on CM4\n");
+#endif
 
-	/* Setup UART user input interface */
-	xUARTQueue = xQueueCreate( 10, sizeof(uint8_t) );
-	cyhal_uart_register_callback(&cy_retarget_io_uart_obj, rx_cback, NULL); /* Register UART Rx callback */
-	cyhal_uart_enable_event(&cy_retarget_io_uart_obj, CYHAL_UART_IRQ_RX_NOT_EMPTY , 3, TRUE); /* Enable Rx interrupt */
-	xTaskCreate (uart_task, "UartTask", TASK_STACK_SIZE, NULL, TASK_PRIORITY, &UartTaskHandle); /* Start task */
-	uint8_t helpCommand = '?';
-	xQueueSend( xUARTQueue, &helpCommand, 0); /* Print out list of commands */
+#if defined(COMPONENT_CM7)
+    printf("CE229889 - MQTT Client running on CM7\n");
+#endif
+    printf("===============================================================\n\n");
 
-    /* Start the FreeRTOS scheduler */
-    vTaskStartScheduler() ;
+    /* Create the MQTT Client task. */
+    xTaskCreate(mqtt_client_task, "MQTT Client task", MQTT_CLIENT_TASK_STACK_SIZE,
+                NULL, MQTT_CLIENT_TASK_PRIORITY, NULL);
 
-    /* Should never get here */
-    CY_ASSERT(0) ;
+    /* Start the FreeRTOS scheduler. */
+    vTaskStartScheduler();
+
+    /* Should never get here. */
+    CY_ASSERT(0);
 }
 
 
