@@ -137,12 +137,12 @@ static cy_mqtt_publish_info_t will_msg_info =
 /* MQTT connection information structure */
 cy_mqtt_connect_info_t connection_info =
 {
-    .client_id = MQTT_CLIENT_IDENTIFIER,
-    .client_id_len = sizeof(MQTT_CLIENT_IDENTIFIER) - 1,
+    .client_id = NULL,
+    .client_id_len = 0,
     .username = MQTT_USERNAME,
     .username_len = sizeof(MQTT_USERNAME) - 1,
-    .password = MQTT_PASSWORD,
-    .password_len = sizeof(MQTT_PASSWORD) - 1,
+    .password = NULL,
+    .password_len = 0,
     .clean_session = true,
     .keep_alive_sec = MQTT_KEEP_ALIVE_SECONDS,
 #if ENABLE_LWT_MESSAGE

@@ -49,6 +49,12 @@
 * Macros
 ********************************************************************************/
 
+/* Wi-Fi Credentials: Modify WIFI_SSID and WIFI_PASSWORD to match your Wi-Fi network
+ * Credentials.
+ */
+#define WIFI_SSID                                "NETGEAR0-24G"
+#define WIFI_PASSWORD                            "departementGEII"
+
 /***************** MQTT CLIENT CONNECTION CONFIGURATION MACROS *****************/
 /* MQTT Broker/Server address and port used for the MQTT connection. */
 #define MQTT_BROKER_ADDRESS               "192.168.0.12"
@@ -60,21 +66,21 @@
 #define MQTT_SECURE_CONNECTION            ( 0 )
 
 /* Configure the user credentials to be sent as part of MQTT CONNECT packet */
-#define MQTT_USERNAME                     "nopru"
-#define MQTT_PASSWORD                     "nopru"
-#define MQTT_CLIENT_IDENTIFIER "8ay6ltdroleczrcje3h7"
+#define MQTT_USERNAME                     "ovJqx3pEv8QhPxU4RERQ"
+#define MQTT_PASSWORD                     ""
+
 
 
 
 /********************* MQTT MESSAGE CONFIGURATION MACROS **********************/
 /* The MQTT topics to be used by the publisher and subscriber. */
-#define MQTT_PUB_TOPIC                    "ledstatus"
+#define MQTT_PUB_TOPIC                    "v1/devices/me/telemetry/1"
 #define MQTT_SUB_TOPIC                    "ledstatus"
 
 /* Set the QoS that is associated with the MQTT publish, and subscribe messages.
  * Valid choices are 0, 1, and 2. Other values should not be used in this macro.
  */
-#define MQTT_MESSAGES_QOS                 ( 1 )
+#define MQTT_MESSAGES_QOS                 ( 2 )
 
 /* Configuration for the 'Last Will and Testament (LWT)'. It is an MQTT message 
  * that will be published by the MQTT broker if the MQTT connection is 
@@ -94,8 +100,9 @@
 /* MQTT messages which are published on the MQTT_PUB_TOPIC that controls the
  * device (user LED in this example) state in this code example.
  */
-#define MQTT_DEVICE_ON_MESSAGE            "TURN ON"
-#define MQTT_DEVICE_OFF_MESSAGE           "TURN OFF"
+#define MQTT_DEVICE_ON_MESSAGE  "{\"state\": \"25\"}"
+#define MQTT_DEVICE_OFF_MESSAGE "{\"state\": \"0\"}"
+
 
 
 /******************* OTHER MQTT CLIENT CONFIGURATION MACROS *******************/
@@ -103,7 +110,7 @@
 #define MQTT_CLIENT_IDENTIFIER            "psoc6-mqtt-client"
 
 /* The timeout in milliseconds for MQTT operations in this example. */
-#define MQTT_TIMEOUT_MS                   ( 5000 )
+#define MQTT_TIMEOUT_MS                   ( 60 )
 
 /* The keep-alive interval in seconds used for MQTT ping request. */
 #define MQTT_KEEP_ALIVE_SECONDS           ( 60 )

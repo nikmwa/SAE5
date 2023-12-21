@@ -56,7 +56,6 @@
 #include "cycfg_gap.h"
 
 /* HTTP client functions */
-#include "http_client.h"
 #include "cy_http_client_api.h"
 
 /* Fonctions MQTT*/
@@ -155,6 +154,7 @@ int main()
 #endif
     printf("===============================================================\n\n");
 
+
     /* Create the MQTT Client task. */
     xTaskCreate(mqtt_client_task, "MQTT Client task", MQTT_CLIENT_TASK_STACK_SIZE,
                 NULL, MQTT_CLIENT_TASK_PRIORITY, NULL);
@@ -165,6 +165,8 @@ int main()
     /* Should never get here. */
     CY_ASSERT(0);
 }
+
+
 
 
 /*******************************************************************************
